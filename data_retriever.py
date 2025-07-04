@@ -1,6 +1,7 @@
 from paths import *
 import tokenizer
 import numpy as np
+from numpy import ndarray
 
 import re
 
@@ -35,13 +36,13 @@ def create_chunks(tokens : list) -> list[list]:
     chunks = []
     for i in range(nb_chunks):
         chunks.append(
-            (tokens[i*CHUNK_SIZE : (i+1)*CHUNK_SIZE - 1], # input
-             tokens[i*CHUNK_SIZE + 1 : (i+1)*CHUNK_SIZE], # target
+            (tokens[i*CHUNK_SIZE : (i+1)*CHUNK_SIZE], # input
+             tokens[i*CHUNK_SIZE + 1 : (i+1)*CHUNK_SIZE + 1], # target
              ))
 
     return chunks
 
-def prepare_data():
+def prepare_data() -> tuple[ndarray, ndarray]:
     lines = load_data()
     clean_text = clean_data(lines)
     tokens = tokenizer.encode(clean_text)
@@ -50,14 +51,10 @@ def prepare_data():
     
     nb_batches = len(chunks) // BATCH_SIZE
     for i in range(nb_batches):
-        inputs = [couple[0] for couple in chunks[i*nb_batches : (i+1)*nb_batches]]
-        targets = [couple[1] for couple in chunks[i*nb_batches : (i+1)*nb_batches]]
+        inputs = [couple[0] for couple in chunks[i*BATCH_SIZE : (i+1)*BATCH_SIZE]]
+        targets = [couple[1] for couple in chunks[i*BATCH_SIZE : (i+1)*BATCH_SIZE]]
 
         inputs_batch = np.array(inputs)
         targets_batch = np.array(targets)
-        print(inputs[1])
-        input()
-        #print(inputs_batch.shape)
-
-
-prepare_data()
+    
+    return inputs_batch, targets_batch
