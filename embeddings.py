@@ -31,22 +31,21 @@ def create_position_embedding(max_seq_len = MAX_SEQUENCE_LENGTH, embedding_dim =
     return np.array(matrix)
 
 
-def create_total_embedding():
+def create_total_embedding() -> np.ndarray:
     """ Create the input embedding from the token and positional embedding """
 
     inputs, targets = prepare_data()
 
-    print("INPUTS SHAPE:", inputs[0], inputs[1])
     print("TARGETS SHAPE:", targets.shape)
 
     token_embeddings = create_token_embedding(85)
     position_embeddings = create_position_embedding()
 
-    print(token_embeddings.shape)
     embedded_inputs = token_embeddings[inputs]
     embedded_inputs += position_embeddings
 
     print("EMBEDDED INPUTS SHAPE:", embedded_inputs.shape)
+    return embedded_inputs
 
     
 
