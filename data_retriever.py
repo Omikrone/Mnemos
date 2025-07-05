@@ -42,7 +42,8 @@ def create_chunks(tokens : list) -> list[list]:
 
     return chunks
 
-def prepare_data() -> tuple[ndarray, ndarray]:
+
+def create_batches() -> tuple[ndarray, ndarray]:
     lines = load_data()
     clean_text = clean_data(lines)
     tokens = tokenizer.encode(clean_text)

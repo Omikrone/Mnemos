@@ -1,7 +1,5 @@
 import numpy as np
 
-from data_retriever import prepare_data
-
 
 EMBEDDING_DIMENSION = 64
 MAX_SEQUENCE_LENGTH = 64
@@ -31,23 +29,16 @@ def create_position_embedding(max_seq_len = MAX_SEQUENCE_LENGTH, embedding_dim =
     return np.array(matrix)
 
 
-def create_total_embedding() -> np.ndarray:
+def create_total_embedding(input_batches, target_batches) -> np.ndarray:
     """ Create the input embedding from the token and positional embedding """
 
-    inputs, targets = prepare_data()
-
-    print("TARGETS SHAPE:", targets.shape)
+    print("TARGETS SHAPE:", target_batches.shape)
 
     token_embeddings = create_token_embedding(85)
     position_embeddings = create_position_embedding()
 
-    embedded_inputs = token_embeddings[inputs]
+    embedded_inputs = token_embeddings[input_batches]
     embedded_inputs += position_embeddings
 
     print("EMBEDDED INPUTS SHAPE:", embedded_inputs.shape)
     return embedded_inputs
-
-    
-
-
-create_total_embedding()

@@ -8,15 +8,13 @@ W_K = np.random.randn(EMBEDDING_DIMENSION, EMBEDDING_DIMENSION)
 W_V = np.random.randn(EMBEDDING_DIMENSION, EMBEDDING_DIMENSION)
 
 
-def add_attention() -> np.ndarray:
+def add_attention(input_embeddings) -> np.ndarray:
     """ Add attention weights to the inputs """
 
-    embedding = create_total_embedding()
-
     # Matrix product to get Query, Key and Value matrices
-    Q = embedding @ W_Q
-    K = embedding @ W_K
-    V = embedding @ W_V
+    Q = input_embeddings @ W_Q
+    K = input_embeddings @ W_K
+    V = input_embeddings @ W_V
 
     scores = Q @ K / np.sqrt(EMBEDDING_DIMENSION)
     print("Scores shape:", scores.shape)
