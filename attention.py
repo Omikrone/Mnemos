@@ -30,8 +30,3 @@ def add_attention() -> np.ndarray:
     print("Value matrix shape:", V.shape)
     output = attention_weights @ V
     return output
-
-
-output = add_attention()
-print("Output shape:", output.shape)
-print("Output:", output)
