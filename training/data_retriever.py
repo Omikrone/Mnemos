@@ -1,5 +1,5 @@
 from paths import *
-import tokenizer
+import training.tokenizer as tokenizer
 import numpy as np
 from numpy import ndarray
 
