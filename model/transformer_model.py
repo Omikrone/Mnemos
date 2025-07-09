@@ -42,3 +42,10 @@ class TransformerModel:
         self.embedding.zero_grad()
         self.position.zero_grad()
         self.block.zero_grad()
+
+    def get_parameters(self):
+        return {
+            "w_embedding": self.embedding.matrix.value,
+            "w_position": self.position.matrix.value,
+            "w_block": self.block.get_parameters()
+        }

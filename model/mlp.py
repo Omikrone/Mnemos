@@ -63,3 +63,11 @@ class MLP:
         self.w2.zero_grad()
         self.b1.zero_grad()
         self.b2.zero_grad()
+
+    def get_parameters(self):
+        return {
+            "w1": self.w1.value,
+            "b1": self.b1.value,
+            "w2": self.w2.value,
+            "b2": self.b2.value
+        }

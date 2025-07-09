@@ -53,3 +53,11 @@ class TransformerBlock:
         self.b_out.zero_grad()
         self.self_attention.zero_grad()
         self.mlp.zero_grad()
+
+    def get_parameters(self):
+        return {
+            "w_out": self.w_out.value,
+            "b_out": self.b_out.value,
+            "self_attention": self.self_attention.get_parameters(),
+            "mlp": self.mlp.get_parameters()
+        }

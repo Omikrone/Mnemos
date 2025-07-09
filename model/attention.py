@@ -90,3 +90,10 @@ class Attention:
         self.query = None
         self.key = None
         self.value = None
+
+    def get_parameters(self):
+        return {
+            "query_matrix": self.query_matrix.value,
+            "key_matrix": self.key_matrix.value,
+            "value_matrix": self.value_matrix.value
+        }
