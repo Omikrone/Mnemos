@@ -22,8 +22,9 @@ class Trainer:
         logits = self.model.forward(input_ids)
         loss = self.loss_fn(logits, targets)
 
-        gradient = self.loss_fn.backward(logits, targets)
-        print(f"Gradient de la perte : {gradient}")
+        loss_gradient = self.loss_fn.backward(logits, targets)
+        model_gradient = self.model.backward(loss_gradient)
+        self.model.step(self.lr)
 
         return loss
     
@@ -38,5 +39,4 @@ class Trainer:
         for batch in batches:
             loss = self.train_step(batch[0], batch[1])
             print("Loss : " + str(loss))
-            input()
 
