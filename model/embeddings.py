@@ -3,42 +3,39 @@ import numpy as np
 
 EMBEDDING_DIMENSION = 64
 MAX_SEQUENCE_LENGTH = 64
+BATCH_SIZE = 8
 
 
-def create_token_embedding(vocab_size : int, embedding_dim = EMBEDDING_DIMENSION) -> np.ndarray:
-    """ Create the matrix for the tokens embedding """
+class TokenEmbedding:
 
-    matrix = list()
-    # Random initialization of the tokens embedding
-    for _ in range(vocab_size):
-        random_embedding = [np.random.uniform(-0.1, 0.1) for _ in range(embedding_dim)]
-        matrix.append(random_embedding)
+    vocab_size : int
+    matrix : np.ndarray | list
 
-    return np.array(matrix)
+    def __init__(self, vocab_size: int):
+        self.vocab_size = vocab_size
+        # Initialisation aléatoire uniforme des vecteurs d'embedding
+        self.matrix: np.ndarray = np.random.uniform(
+            low=-0.1, high=0.1, size=(vocab_size, EMBEDDING_DIMENSION)
+        )
 
-
-def create_position_embedding(max_seq_len = MAX_SEQUENCE_LENGTH, embedding_dim = EMBEDDING_DIMENSION) -> np.ndarray:
-    """ Create the matrix for the positional embedding """
-
-    matrix = list()
-    # Random initialization of the positional embedding
-    for _ in range(max_seq_len):
-        random_embedding = [np.random.uniform(-0.1, 0.1) for _ in range(embedding_dim)]
-        matrix.append(random_embedding)
-
-    return np.array(matrix)
+    def embed_batches(self, input_batches : np.ndarray) -> np.ndarray:
+        return self.matrix[input_batches]
 
 
-def create_total_embedding(input_batches, target_batches) -> np.ndarray:
-    """ Create the input embedding from the token and positional embedding """
+class PositionEmbedding:
 
-    print("TARGETS SHAPE:", target_batches.shape)
+    matrix : np.ndarray | list
 
-    token_embeddings = create_token_embedding(85)
-    position_embeddings = create_position_embedding()
+    def __init__(self):
+        # Initialisation aléatoire uniforme des vecteurs d'embedding
+        self.matrix: np.ndarray = np.random.uniform(
+            low=-0.1, high=0.1, size=(MAX_SEQUENCE_LENGTH, EMBEDDING_DIMENSION)
+        )
 
-    embedded_inputs = token_embeddings[input_batches]
-    embedded_inputs += position_embeddings
+    def embed_positions(self, batch_size : int, seq_len : int) -> np.ndarray:
 
-    print("EMBEDDED INPUTS SHAPE:", embedded_inputs.shape)
-    return embedded_inputs
+        if seq_len > MAX_SEQUENCE_LENGTH:
+            raise ValueError(f"seq_len {seq_len} > max_length {MAX_SEQUENCE_LENGTH}")
+        
+        positions = self.matrix[:seq_len]
+        return np.broadcast_to(positions, (batch_size, seq_len, EMBEDDING_DIMENSION))

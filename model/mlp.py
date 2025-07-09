@@ -1,21 +1,30 @@
 import numpy as np
 
-from attention import add_attention
-from embeddings import EMBEDDING_DIMENSION, create_total_embedding
-
+from model.embeddings import EMBEDDING_DIMENSION
 
 HIDDEN_DIMENSION = 128  # Dimension cachée pour le MLP
 
 
+class MLP:
 
+    w1 : np.ndarray
+    b1 : np.ndarray
+    w2 : np.ndarray
+    b2 : np.ndarray
 
-def MLP(inputs: np.ndarray, W1, b1, W2, b2) -> np.ndarray:
-    """ Multilayer Perceptron (MLP) pour transformer les embeddings """
-    
-    h = np.dot(inputs, W1) + b1 # Produit matriciel avec la première couche
-    print("Shape of h:", h.shape)  # Affichage de la forme de h pour le débogage
-    h_relu = np.maximum(0, h)     # ReLU
-    out = np.dot(h_relu, W2) + b2 # Produit matriciel avec la seconde couche
-    print("Shape of out:", out.shape)  # Affichage de la forme de out pour le débogage
-    
-    return out
+    def __init__(self):
+
+        # Initialisation aléatoire des poids de la première et seconde couche
+        self.w1 = np.random.randn(EMBEDDING_DIMENSION, HIDDEN_DIMENSION) * 0.01  # Poids de la première couche
+        self.w2 = np.random.randn(HIDDEN_DIMENSION, EMBEDDING_DIMENSION) * 0.01  # Poids de la seconde couche
+
+        # Initialisation à 0 des biais
+        self.b1 = np.zeros((1, HIDDEN_DIMENSION))  # Biais de la première couche
+        self.b2 = np.zeros((1, EMBEDDING_DIMENSION))  # Biais de la seconde couche
+
+    def feed_forward(self, inputs : np.ndarray) -> np.ndarray:
+        h = inputs @ self.w1 + self.b1
+        h_relu = np.maximum(0, h)
+        out = h_relu @ self.w2 + self.b2
+
+        return out

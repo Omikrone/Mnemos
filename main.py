@@ -1,4 +1,5 @@
-from training import data_retriever
+from training.train import Trainer
 
-inputs, targets = data_retriever.create_batches()
-print(inputs, "\n\n", targets)
+trainer = Trainer()
+
+trainer.train()
