@@ -5,6 +5,7 @@ from model.linear import Linear
 from model.mlp import MLP
 from model.attention import Attention
 from model.embeddings import EMBEDDING_DIMENSION
+from model.save_model import TransformerBlockParams
 
 
 class TransformerBlock:
@@ -20,6 +21,15 @@ class TransformerBlock:
         self.b_out = Param(np.zeros((vocab_size,)))
         self.self_attention = Attention()
         self.mlp = MLP()
+
+    @classmethod
+    def from_params(cls, params: TransformerBlockParams) -> 'TransformerBlock':
+        instance = cls(vocab_size=params.w_out.shape[1])
+        instance.w_out = Param(params.w_out)
+        instance.b_out = Param(params.b_out)
+        instance.self_attention = Attention.from_params(params.self_attention)
+        instance.mlp = MLP.from_params(params.mlp)
+        return instance
 
     def forward(self, inputs : np.ndarray):
         attn_out = self.self_attention.add_attention(inputs)
@@ -55,9 +65,9 @@ class TransformerBlock:
         self.mlp.zero_grad()
 
     def get_parameters(self):
-        return {
-            "w_out": self.w_out.value,
-            "b_out": self.b_out.value,
-            "self_attention": self.self_attention.get_parameters(),
-            "mlp": self.mlp.get_parameters()
-        }
+        return TransformerBlockParams(
+            w_out=self.w_out.value,
+            b_out=self.b_out.value,
+            self_attention=self.self_attention.get_parameters(),
+            mlp=self.mlp.get_parameters()
+        )

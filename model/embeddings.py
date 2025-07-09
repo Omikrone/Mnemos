@@ -21,6 +21,12 @@ class TokenEmbedding:
             low=-0.1, high=0.1, size=(vocab_size, EMBEDDING_DIMENSION)
         ))
 
+    @classmethod
+    def from_params(cls, embedding_matrix: np.ndarray) -> 'TokenEmbedding':
+        instance = cls(vocab_size=embedding_matrix.shape[0])
+        instance.matrix = Param(embedding_matrix)
+        return instance
+
     def embed_batches(self, input_batches : np.ndarray) -> np.ndarray:
         self.input_batches = input_batches
         return self.matrix.value[input_batches]
@@ -53,6 +59,12 @@ class PositionEmbedding:
         self.matrix = Param(np.random.uniform(
             low=-0.1, high=0.1, size=(MAX_SEQUENCE_LENGTH, EMBEDDING_DIMENSION)
         ))
+    
+    @classmethod
+    def from_params(cls, position_matrix: np.ndarray) -> 'PositionEmbedding':
+        instance = cls()
+        instance.matrix = Param(position_matrix)
+        return instance
 
     def embed_positions(self, batch_size: int, seq_len: int) -> np.ndarray:
         if seq_len > MAX_SEQUENCE_LENGTH:

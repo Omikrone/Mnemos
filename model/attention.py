@@ -2,6 +2,7 @@ import numpy as np
 
 from model.embeddings import EMBEDDING_DIMENSION
 from model.gradient import Param
+from model.save_model import AttentionParams
 
 
 class Attention:
@@ -22,6 +23,14 @@ class Attention:
         self.query_matrix = Param(np.random.randn(EMBEDDING_DIMENSION, EMBEDDING_DIMENSION))
         self.key_matrix = Param(np.random.randn(EMBEDDING_DIMENSION, EMBEDDING_DIMENSION))
         self.value_matrix = Param(np.random.randn(EMBEDDING_DIMENSION, EMBEDDING_DIMENSION))
+
+    @classmethod
+    def from_params(cls, params: AttentionParams):
+        instance = cls()
+        instance.query_matrix = Param(params.query_matrix)
+        instance.key_matrix = Param(params.key_matrix)
+        instance.value_matrix = Param(params.value_matrix)
+        return instance
 
 
     def add_attention(self, input_embeddings) -> np.ndarray:
@@ -92,8 +101,8 @@ class Attention:
         self.value = None
 
     def get_parameters(self):
-        return {
-            "query_matrix": self.query_matrix.value,
-            "key_matrix": self.key_matrix.value,
-            "value_matrix": self.value_matrix.value
-        }
+        return AttentionParams(
+            query_matrix=self.query_matrix.value,
+            key_matrix=self.key_matrix.value,
+            value_matrix=self.value_matrix.value
+        )

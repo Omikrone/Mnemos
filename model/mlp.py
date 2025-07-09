@@ -2,6 +2,7 @@ import numpy as np
 
 from model.gradient import Param
 from model.embeddings import EMBEDDING_DIMENSION
+from model.save_model import MLPParams
 
 HIDDEN_DIMENSION = 128  # Dimension cachée pour le MLP
 
@@ -25,6 +26,15 @@ class MLP:
         # Initialisation à 0 des biais
         self.b1 = Param(np.zeros((1, HIDDEN_DIMENSION)))  # Biais de la première couche
         self.b2 = Param(np.zeros((1, EMBEDDING_DIMENSION)))  # Biais de la seconde couche
+
+    @classmethod
+    def from_params(cls, params: MLPParams):
+        instance = cls()
+        instance.w1 = Param(params.w1)
+        instance.b1 = Param(params.b1)
+        instance.w2 = Param(params.w2)
+        instance.b2 = Param(params.b2)
+        return instance
 
     def feed_forward(self, inputs : np.ndarray) -> np.ndarray:
         self.inputs = inputs
@@ -65,9 +75,9 @@ class MLP:
         self.b2.zero_grad()
 
     def get_parameters(self):
-        return {
-            "w1": self.w1.value,
-            "b1": self.b1.value,
-            "w2": self.w2.value,
-            "b2": self.b2.value
-        }
+        return MLPParams(
+            w1=self.w1.value,
+            b1=self.b1.value,
+            w2=self.w2.value,
+            b2=self.b2.value
+        )

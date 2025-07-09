@@ -55,7 +55,6 @@ class Trainer:
         self.save_model()
         print("Model saved successfully.")
 
-
     def save_model(self):
         model_parameters = self.model.get_parameters()
         with open(SAVE_MODEL_PATH, "wb") as f:
