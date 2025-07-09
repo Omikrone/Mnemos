@@ -38,6 +38,9 @@ class TokenEmbedding:
                 token_id = self.input_batches[i, j]
                 self.matrix.gradient[token_id] += d_output[i, j]
         return self.matrix.gradient
+    
+    def zero_grad(self):
+        self.matrix.zero_grad()
 
 
 class PositionEmbedding:
@@ -68,3 +71,6 @@ class PositionEmbedding:
 
         self.matrix.gradient[:self.seq_len] += grad_sum
         return self.matrix.gradient
+    
+    def zero_grad(self):
+        self.matrix.zero_grad()

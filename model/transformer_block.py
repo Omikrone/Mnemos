@@ -47,3 +47,9 @@ class TransformerBlock:
         self.b_out.step(lr)
         self.self_attention.step(lr)
         self.mlp.step(lr)
+
+    def zero_grad(self):
+        self.w_out.zero_grad()
+        self.b_out.zero_grad()
+        self.self_attention.zero_grad()
+        self.mlp.zero_grad()

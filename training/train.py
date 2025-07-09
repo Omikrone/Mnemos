@@ -23,8 +23,9 @@ class Trainer:
         loss = self.loss_fn(logits, targets)
 
         loss_gradient = self.loss_fn.backward(logits, targets)
-        model_gradient = self.model.backward(loss_gradient)
+        self.model.backward(loss_gradient)
         self.model.step(self.lr)
+        self.model.zero_grad()
 
         return loss
     

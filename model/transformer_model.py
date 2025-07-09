@@ -37,3 +37,8 @@ class TransformerModel:
         self.embedding.matrix.step(lr)
         self.position.matrix.step(lr)
         self.block.step(lr)
+
+    def zero_grad(self):
+        self.embedding.zero_grad()
+        self.position.zero_grad()
+        self.block.zero_grad()

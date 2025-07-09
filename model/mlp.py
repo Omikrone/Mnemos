@@ -57,3 +57,9 @@ class MLP:
         self.w2.step(lr)
         self.b1.step(lr)
         self.b2.step(lr)
+
+    def zero_grad(self):
+        self.w1.zero_grad()
+        self.w2.zero_grad()
+        self.b1.zero_grad()
+        self.b2.zero_grad()

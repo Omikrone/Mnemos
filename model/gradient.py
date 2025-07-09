@@ -14,3 +14,8 @@ class Param:
         """ Mise à jour du poids avec la descente de gradient """
         
         self.value -= lr * self.gradient
+
+    def zero_grad(self):
+        """ Réinitialisation du gradient """
+        
+        self.gradient.fill(0)

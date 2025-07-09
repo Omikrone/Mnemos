@@ -79,3 +79,14 @@ class Attention:
         self.query_matrix.step(lr)
         self.value_matrix.step(lr)
         self.key_matrix.step(lr)
+
+    def zero_grad(self):
+        self.query_matrix.zero_grad()
+        self.value_matrix.zero_grad()
+        self.key_matrix.zero_grad()
+        self.attention_weights = None
+        self.output = None
+        self.input_embeddings = None
+        self.query = None
+        self.key = None
+        self.value = None
