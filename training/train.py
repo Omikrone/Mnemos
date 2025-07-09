@@ -9,7 +9,7 @@ from training.cross_entropy import CrossEntropyLoss
 from training.preprocesser import PreProcesser
 
 
-TRAINING_DATA_PATH = Path("test_data/assemblee_nationale.txt")
+TRAINING_DATA_PATH = Path("training_data/train_small.txt")
 SAVE_MODEL_PATH = Path("save/model.pkl")
 SAVE_VOCABULARY_PATH = Path("save/vocabulary.json")
 
@@ -43,17 +43,26 @@ class Trainer:
 
         return loss
     
+
     def train(self):
 
+        print("Starting training...")
         chunks = self.tokenizer.create_chunks()
         batches = self.tokenizer.create_batches(chunks)
+        total_batches = len(batches)
+        print(f"Number of batches: {total_batches}")
 
-        for batch in batches:
+        for i, batch in enumerate(batches):
             loss = self.train_step(batch[0], batch[1])
-            print("Loss : " + str(loss))
+
+            # Affichage tous les 1 %
+            if i % max(1, total_batches // 100) == 0:
+                percent = (i / total_batches) * 100
+                print(f"[{i}/{total_batches}] {percent:.1f}% - Loss: {loss:.4f}")
 
         self.save_model()
         print("Model saved successfully.")
+
 
     def save_model(self):
         model_parameters = self.model.get_parameters()

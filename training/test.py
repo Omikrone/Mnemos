@@ -10,7 +10,7 @@ from training.tokenizer import Tokenizer
 from training.cross_entropy import CrossEntropyLoss
 
 
-TEST_DATA_FILE = Path("test_data/assemblee_nationale.txt")
+TEST_DATA_FILE = Path("test_data/test2.txt")
 
 
 
