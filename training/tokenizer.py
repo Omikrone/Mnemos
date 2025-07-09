@@ -52,13 +52,7 @@ class Tokenizer:
 
         for c in chars:
             if not c in association_table.keys():
-                if association_table != {}:
-                    new_id = int(max(association_table.values())) + 1 
-                else:
-                    new_id = 0
-
-                association_table[c] = new_id
-                self.table_manager.save_table(association_table)
+                raise ValueError(f"Character '{c}' not found in the association table.")
             
             vector.append(association_table[c])
         
@@ -77,6 +71,27 @@ class Tokenizer:
                     text += key
         
         return text
+    
+    def get_vocabulary_size(self) -> int:
+        """ Get the size of the vocabulary. """
+        association_table = self.table_manager.load_table()
+        return len(association_table)
+    
+    
+    def build_vocabulary(self, text: str) -> None:
+        """ Build the vocabulary from the text. """
+        chars = set(text)
+        association_table = self.table_manager.load_table()
+
+        for c in chars:
+            if c not in association_table:
+                if association_table == {}:
+                    association_table[c] = 0
+                else:
+                    max_index = max(association_table.values())
+                    association_table[c] = max_index + 1
+
+        self.table_manager.save_table(association_table)
 
 
     def create_chunks(self) -> list[list]:

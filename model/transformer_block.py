@@ -16,7 +16,7 @@ class TransformerBlock:
     mlp : MLP
 
     def __init__(self, vocab_size : int):
-        self.w_out = Param(np.random.randn(EMBEDDING_DIMENSION, 85) * 0.02)
+        self.w_out = Param(np.random.randn(EMBEDDING_DIMENSION, vocab_size) * 0.02)
         self.b_out = Param(np.zeros((vocab_size,)))
         self.self_attention = Attention()
         self.mlp = MLP()

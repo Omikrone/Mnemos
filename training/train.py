@@ -7,14 +7,24 @@ from training.cross_entropy import CrossEntropyLoss
 from training.preprocesser import PreProcesser
 
 
+TRAINING_DATA_PATH = Path("test_data/assemblee_nationale.txt")
+
+
 class Trainer:
 
+    tokenizer : Tokenizer
     model : TransformerModel
     loss_fn : CrossEntropyLoss
     lr : int
 
     def __init__(self):
-        self.model = TransformerModel(85)
+        preprocesser = PreProcesser()
+        cleaned_data = preprocesser(TRAINING_DATA_PATH)
+        self.tokenizer = Tokenizer(cleaned_data)
+        self.tokenizer.build_vocabulary(cleaned_data)
+        vocab_size = self.tokenizer.get_vocabulary_size()
+
+        self.model = TransformerModel(vocab_size)
         self.lr = 1e-3
         self.loss_fn = CrossEntropyLoss()
 
@@ -30,12 +40,9 @@ class Trainer:
         return loss
     
     def train(self):
-        preprocesser = PreProcesser()
-        cleaned_data = preprocesser(Path("data/assemblee_nationale.txt"))
-        tokenizer = Tokenizer(cleaned_data)
 
-        chunks = tokenizer.create_chunks()
-        batches = tokenizer.create_batches(chunks)
+        chunks = self.tokenizer.create_chunks()
+        batches = self.tokenizer.create_batches(chunks)
 
         for batch in batches:
             loss = self.train_step(batch[0], batch[1])
