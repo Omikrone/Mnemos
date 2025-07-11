@@ -43,7 +43,7 @@ class Tokenizer:
         self.text = text
         self.table_manager = TokensTableManager(Path("training/table.json"))
 
-    def _encode(self, text : str) -> list:
+    def encode(self, text : str) -> list:
         """ Convert a text to a numeric vector. """
 
         chars = list(text)
@@ -59,7 +59,7 @@ class Tokenizer:
         return vector
 
 
-    def _decode(self, vector : list) -> str:
+    def decode(self, vector : list) -> str:
         """ Convert a numeric vector to a text. """
 
         table = self.table_manager.load_table()
@@ -97,7 +97,7 @@ class Tokenizer:
     def create_chunks(self) -> list[list]:
         """ Split the text into inputs and targets of CHUNK_SIZE tokens """
 
-        tokens = self._encode(self.text)
+        tokens = self.encode(self.text)
         nb_chunks = len(tokens) // CHUNK_SIZE
 
         chunks = []

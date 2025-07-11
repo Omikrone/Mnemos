@@ -9,7 +9,7 @@ from training.cross_entropy import CrossEntropyLoss
 from training.preprocesser import PreProcesser
 
 
-TRAINING_DATA_PATH = Path("training_data/train_small.txt")
+TRAINING_DATA_PATH = Path("training_data/train.txt")
 SAVE_MODEL_PATH = Path("save/model.pkl")
 SAVE_VOCABULARY_PATH = Path("save/vocabulary.json")
 

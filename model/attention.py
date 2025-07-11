@@ -42,11 +42,12 @@ class Attention:
         self.key = input_embeddings @ self.key_matrix.value
         self.value = input_embeddings @ self.value_matrix.value
 
-        scores = self.query @ self.key / np.sqrt(EMBEDDING_DIMENSION)
-        
+        scores = self.query @ self.key.transpose(0, 2, 1) / np.sqrt(EMBEDDING_DIMENSION)
+
         # 4. Softmax ligne par ligne pour normaliser
-        self.attention_weights = np.exp(scores)
-        self.attention_weights /= np.sum(self.attention_weights, axis=1, keepdims=True)
+        exp_scores = np.exp(scores - np.max(scores, axis=-1, keepdims=True))  # stab numérique
+        attention_weights = exp_scores / np.sum(exp_scores, axis=-1, keepdims=True)
+        self.attention_weights = attention_weights
 
         # On applique les poids d'attention aux valeurs
         self.output = self.attention_weights @ self.value

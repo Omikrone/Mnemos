@@ -16,10 +16,18 @@ class MLPParams:
     b2: np.ndarray
 
 @dataclass
+class LayerNormParams:
+    gamma: np.ndarray
+    beta: np.ndarray
+    eps: float
+
+@dataclass
 class TransformerBlockParams:
+    ln1: LayerNormParams
     w_out: np.ndarray
     b_out: np.ndarray
     self_attention: AttentionParams
+    ln2: LayerNormParams
     mlp: MLPParams
 
 @dataclass

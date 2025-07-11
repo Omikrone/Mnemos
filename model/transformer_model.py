@@ -35,6 +35,19 @@ class TransformerModel:
         logits = self.block.forward(x)
         return logits
     
+    def sample_top_k(self, logits, k=10):
+        top_k_indices = np.argpartition(logits, -k)[-k:]
+        top_k_logits = logits[top_k_indices]
+        probs = np.exp(top_k_logits) / np.sum(np.exp(top_k_logits))
+        return np.random.choice(top_k_indices, p=probs)
+
+    def predict_next_token(self, input_ids: np.ndarray):
+        logits = self.forward(input_ids)
+        last_logits = logits[0, -1]
+        prediction = self.sample_top_k(last_logits, k=10)
+        #prediction = np.argmax(last_logits)
+        return prediction
+
 
     def backward(self, loss_gradient) -> np.ndarray:
         grad = self.block.backward(loss_gradient)
