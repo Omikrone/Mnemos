@@ -7,10 +7,12 @@ class CrossEntropyLoss:
     logits : np.ndarray
     targets : np.ndarray
 
+
     def __init__(self):
         self.softmax_value = None
         self.logits = None
         self.targets = None
+
 
     def _softmax(self, logits: np.ndarray) -> np.ndarray:
         """ Normalise les logits pour en faire une distribution de probabilité. """

@@ -10,10 +10,10 @@ class AttentionParams:
 
 @dataclass
 class MLPParams:
-    w1: np.ndarray
-    b1: np.ndarray
-    w2: np.ndarray
-    b2: np.ndarray
+    w_up: np.ndarray
+    b_up: np.ndarray
+    w_down: np.ndarray
+    b_down: np.ndarray
 
 @dataclass
 class LayerNormParams:

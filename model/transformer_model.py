@@ -19,6 +19,8 @@ class TransformerModel:
 
     @classmethod
     def from_params(cls, params: ModelParams) -> 'TransformerModel':
+        """ Crée une instance de TransformerModel à partir des paramètres sauvegardés. """
+
         instance = cls(vocab_size=params.embedding_matrix.shape[0])
         instance.embedding = TokenEmbedding.from_params(params.embedding_matrix)
         instance.position = PositionEmbedding.from_params(params.position_matrix)
@@ -35,6 +37,14 @@ class TransformerModel:
         logits = self.block.forward(x)
         return logits
     
+    
+    def backward(self, loss_gradient) -> np.ndarray:
+        grad = self.block.backward(loss_gradient)
+        grad = self.position.backward(grad)
+        grad = self.embedding.backward(grad)
+        return grad
+    
+
     def sample_top_k(self, logits, k=10):
         top_k_indices = np.argpartition(logits, -k)[-k:]
         top_k_logits = logits[top_k_indices]
@@ -47,13 +57,6 @@ class TransformerModel:
         prediction = self.sample_top_k(last_logits, k=10)
         #prediction = np.argmax(last_logits)
         return prediction
-
-
-    def backward(self, loss_gradient) -> np.ndarray:
-        grad = self.block.backward(loss_gradient)
-        grad = self.position.backward(grad)
-        grad = self.embedding.backward(grad)
-        return grad
     
     def step(self, lr : float):
         self.embedding.matrix.step(lr)

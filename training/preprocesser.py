@@ -9,6 +9,8 @@ class PreProcesser:
         self.speaker_pattern = re.compile(r"\[.*?\]")
 
     def __call__(self, data_file_path: Path) -> str:
+        """ Nettoie le fichier de données en supprimant les balises de locuteur. """
+
         cleaned_lines = []
 
         # Obtenir la taille totale du fichier (en octets)
