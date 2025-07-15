@@ -4,10 +4,10 @@ from training.train import Trainer
 
 
 
-#trainer = Trainer()
-#trainer.train()
-#tester = Tester()
-#tester.test()
+trainer = Trainer()
+trainer.train()
+tester = Tester()
+tester.test()
 #exit(0)
 
 if __name__ == "__main__":
