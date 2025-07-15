@@ -19,28 +19,38 @@ def bpe_builder(text: str) -> None:
     vocab = defaultdict(int)
     occurences = defaultdict(set)
 
-    while True:
-        occurences.clear()
+    for i, seq in enumerate(sequences):
+        for j in range(len(seq) - 1):
+            pair = (seq[j], seq[j + 1])
+            occurences[pair].add(i)
 
-        for i, seq in enumerate(sequences):
-            for j in range(len(seq) - 1):
-                pair = (seq[j], seq[j + 1])
-                occurences[pair].add(i)
+    while True:
         
         most_frequent_pair = max(occurences, key=lambda p: len(occurences[p]))
+        print(most_frequent_pair)
         if len(occurences[most_frequent_pair]) <= 1:
             break
         
         for seq_i in occurences[most_frequent_pair]:
+            #print(seq_i)
             seq = sequences[seq_i]
             i = 0
             while i < len(seq) - 1:
                 pair = (seq[i], seq[i + 1])
                 if pair == most_frequent_pair:
-                    seq[i] = seq[i] + seq[i + 1]
-                    seq.pop(i + 1)
+                    new_token = seq[i] + seq[i + 1]
+                    seq[i] = new_token
+                    del seq[i + 1]
+                    if i > 0:
+                        left_pair = (seq[i - 1], new_token)
+                        occurences[left_pair].add(seq_i)
+
+                    if i < len(seq) - 1:
+                        right_pair = (new_token, seq[i + 1])
+                        occurences[right_pair].add(seq_i)
                 else:
                     i += 1
+        del occurences[most_frequent_pair]
 
         if len(vocab) > MAX_TOKENS:
             break
