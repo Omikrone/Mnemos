@@ -2,35 +2,11 @@ from paths import *
 import json
 import numpy as np
 
+from training.bpe import TokensTableManager, encode_text
+
 
 CHUNK_SIZE = 64
 BATCH_SIZE = 8
-
-
-class TokensTableManager:
-
-    table_path : Path
-
-    def __init__(self, table_path : Path):
-        self.table_path = table_path
-
-
-    def load_table(self) -> dict:
-        """ Load the association table from a JSON file. """
-
-        if not (self.table_path).exists():
-            return {}
-        
-        with open(self.table_path, 'r') as file:
-            table = json.load(file)
-        return table
-
-
-    def save_table(self, table: dict) -> dict:
-        """ Save the association table to a JSON file. """
-
-        with open(self.table_path, 'w') as file:
-            json.dump(table, file, indent=4)
 
 
 
@@ -42,21 +18,6 @@ class Tokenizer:
     def __init__(self, text):
         self.text = text
         self.table_manager = TokensTableManager(Path("training/table.json"))
-
-    def encode(self, text : str) -> list:
-        """ Convert a text to a numeric vector. """
-
-        chars = list(text)
-        vector = []
-        association_table = self.table_manager.load_table()
-
-        for c in chars:
-            if not c in association_table.keys():
-                raise ValueError(f"Character '{c}' not found in the association table.")
-            
-            vector.append(association_table[c])
-        
-        return vector
 
 
     def decode(self, vector : list) -> str:
@@ -76,7 +37,7 @@ class Tokenizer:
     def create_chunks(self) -> list[list]:
         """ Split the text into inputs and targets of CHUNK_SIZE tokens """
 
-        tokens = self.encode(self.text)
+        tokens = encode_text(self.text)
         nb_chunks = len(tokens) // CHUNK_SIZE
 
         chunks = []

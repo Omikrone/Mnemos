@@ -7,7 +7,7 @@ from training.tokenizer import Tokenizer
 from model.transformer_model import TransformerModel
 from training.cross_entropy import CrossEntropyLoss
 from training.preprocesser import PreProcesser
-from training.vocabular import bpe_builder, get_vocabulary_size
+from training.bpe import bpe_builder, get_vocabulary_size, encode_text
 
 
 TRAINING_DATA_PATH = Path("training_data/train_small.txt")
@@ -27,6 +27,7 @@ class Trainer:
         cleaned_data = preprocesser(TRAINING_DATA_PATH)
         self.tokenizer = Tokenizer(cleaned_data)
         bpe_builder(cleaned_data)
+        encode_text(cleaned_data)
         vocab_size = get_vocabulary_size()
 
         self.model = TransformerModel(vocab_size)

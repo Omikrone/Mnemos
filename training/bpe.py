@@ -1,9 +1,38 @@
 from collections import defaultdict
-import time
-from training.tokenizer import TokensTableManager, TABLE_PATH
+import json
+from pathlib import Path
+import pickle
+from paths import TABLE_PATH
+
+MAX_TOKENS = 1024
+
+
+class TokensTableManager:
+
+    table_path : Path
+
+    def __init__(self, table_path : Path):
+        self.table_path = table_path
+
+
+    def load_table(self) -> dict:
+        """ Load the association table from a JSON file. """
+
+        if not (self.table_path).exists():
+            return {}
+        
+        with open(self.table_path, 'r') as file:
+            table = json.load(file)
+        return table
+
+
+    def save_table(self, table: dict) -> dict:
+        """ Save the association table to a JSON file. """
+
+        with open(self.table_path, 'w') as file:
+            json.dump(table, file, indent=4)
 
 table_manager = TokensTableManager(TABLE_PATH)
-MAX_TOKENS = 1024
 
 
 def get_vocabulary_size() -> int:
@@ -16,8 +45,9 @@ def bpe_builder(text: str) -> None:
     """ Build the vocabulary from the text. """
 
     sequences = [list(' ' + w) for w in text.split(" ")]
-    vocab = defaultdict(int)
+    vocab = {char: idx for idx, char in enumerate(sorted(set("".join(text))))}
     occurences = defaultdict(set)
+    merge_rules = dict()
 
     for i, seq in enumerate(sequences):
         for j in range(len(seq) - 1):
@@ -27,7 +57,7 @@ def bpe_builder(text: str) -> None:
     while True:
         
         most_frequent_pair = max(occurences, key=lambda p: len(occurences[p]))
-        print(most_frequent_pair)
+        merge_rules[most_frequent_pair] = most_frequent_pair[0] + most_frequent_pair[1]
         if len(occurences[most_frequent_pair]) <= 1:
             break
         
@@ -61,16 +91,32 @@ def bpe_builder(text: str) -> None:
         if new_token not in vocab:
             vocab[new_token] = len(vocab)
     table_manager.save_table(vocab)
+    with open("merges.pkl", "wb") as f:
+        pickle.dump(merge_rules, f)
 
 
 def encode_text(text: str) -> list:
     """ Encode the text into a list of integers. """
-    
-    sequences = [list(' ' + w) for w in text.split(" ")]
 
-    while True:
-        for seq in sequences:
-            for i in range(len(seq)):
-                if seq[i] not in table_manager.load_table():
-                    raise ValueError(f"Token '{seq[i]}' not found in the vocabulary.")
-                
+    with open("merges.pkl", "rb") as f:
+        merge_rules = pickle.load(f)
+    table = table_manager.load_table()
+    tokens = list()
+    
+    chars = list(text)
+
+    i = 0
+    while i < len(chars) - 1:
+        print(f"i: {i} / {len(chars)}")
+        merge = (chars[i], chars[i + 1])
+        if merge in merge_rules:
+            chars[i] = merge_rules[merge]
+            del chars[i + 1]
+            if i > 0:
+                i -= 1
+        else:
+            i += 1
+
+    for c in chars:
+        tokens.append(table[c])
+    return tokens
