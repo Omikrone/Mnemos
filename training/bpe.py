@@ -3,8 +3,9 @@ import json
 from pathlib import Path
 import pickle
 from paths import TABLE_PATH
+import heapq
 
-MAX_TOKENS = 1024
+MAX_TOKENS = 2048
 
 
 class TokensTableManager:
@@ -32,11 +33,13 @@ class TokensTableManager:
         with open(self.table_path, 'w') as file:
             json.dump(table, file, indent=4)
 
-table_manager = TokensTableManager(TABLE_PATH)
+
 
 
 def get_vocabulary_size() -> int:
     """ Get the size of the vocabulary. """
+
+    table_manager = TokensTableManager(TABLE_PATH)
     association_table = table_manager.load_table()
     return len(association_table)
 
@@ -44,10 +47,12 @@ def get_vocabulary_size() -> int:
 def bpe_builder(text: str) -> None:
     """ Build the vocabulary from the text. """
 
+    table_manager = TokensTableManager(TABLE_PATH)
     sequences = [list(' ' + w) for w in text.split(" ")]
-    vocab = {char: idx for idx, char in enumerate(sorted(set("".join(text))))}
+    vocab = {char: idx for idx, char in enumerate(sorted(set("".join(text))), start=1)}
+    vocab['<unk>'] = 0  # Add an unknown token
     occurences = defaultdict(set)
-    merge_rules = dict()
+    merge_rules = list()
 
     for i, seq in enumerate(sequences):
         for j in range(len(seq) - 1):
@@ -57,7 +62,7 @@ def bpe_builder(text: str) -> None:
     while True:
         
         most_frequent_pair = max(occurences, key=lambda p: len(occurences[p]))
-        merge_rules[most_frequent_pair] = most_frequent_pair[0] + most_frequent_pair[1]
+        merge_rules.append(most_frequent_pair)
         if len(occurences[most_frequent_pair]) <= 1:
             break
         
@@ -95,28 +100,53 @@ def bpe_builder(text: str) -> None:
         pickle.dump(merge_rules, f)
 
 
-def encode_text(text: str) -> list:
-    """ Encode the text into a list of integers. """
-
+def encode_text(text: str) -> list[int]:
     with open("merges.pkl", "rb") as f:
-        merge_rules = pickle.load(f)
+        merges = pickle.load(f)  # list of pairs
+
+    table_manager = TokensTableManager(TABLE_PATH)
     table = table_manager.load_table()
-    tokens = list()
     
-    chars = list(text)
+    merge_rank = {tuple(pair): i for i, pair in enumerate(merges)}
+    
+    # Initial sequence: characters with a space prefix for consistency
+    seq = [' ' + text[0]] + list(text[1:]) if text else []
 
-    i = 0
-    while i < len(chars) - 1:
-        print(f"i: {i} / {len(chars)}")
-        merge = (chars[i], chars[i + 1])
-        if merge in merge_rules:
-            chars[i] = merge_rules[merge]
-            del chars[i + 1]
-            if i > 0:
-                i -= 1
-        else:
-            i += 1
-
-    for c in chars:
-        tokens.append(table[c])
+    # Build initial list of pairs with priority
+    pairs = []
+    for i in range(len(seq) - 1):
+        pair = (seq[i], seq[i + 1])
+        if pair in merge_rank:
+            heapq.heappush(pairs, (merge_rank[pair], i, pair))
+    
+    while pairs:
+        _, i, pair = heapq.heappop(pairs)
+        
+        # Validate the pair is still at the right position
+        if i >= len(seq) - 1 or (seq[i], seq[i + 1]) != pair:
+            continue
+        
+        # Merge the pair
+        merged = seq[i] + seq[i + 1]
+        seq[i] = merged
+        del seq[i + 1]
+        
+        # Reinsert surrounding pairs
+        if i > 0:
+            prev = (seq[i - 1], seq[i])
+            if prev in merge_rank:
+                heapq.heappush(pairs, (merge_rank[prev], i - 1, prev))
+        if i < len(seq) - 1:
+            nxt = (seq[i], seq[i + 1])
+            if nxt in merge_rank:
+                heapq.heappush(pairs, (merge_rank[nxt], i, nxt))
+    
+    tokens = []
+    for c in seq:
+        if c in table:
+            tokens.append(table[c])
+        else:            
+            print(f"Warning: Character '{c}' not found in vocabulary. Skipping.")
+            tokens.append(0)  # or handle it differently if needed
+            continue
     return tokens

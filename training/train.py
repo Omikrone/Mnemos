@@ -27,7 +27,6 @@ class Trainer:
         cleaned_data = preprocesser(TRAINING_DATA_PATH)
         self.tokenizer = Tokenizer(cleaned_data)
         bpe_builder(cleaned_data)
-        encode_text(cleaned_data)
         vocab_size = get_vocabulary_size()
 
         self.model = TransformerModel(vocab_size)

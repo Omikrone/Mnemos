@@ -1,3 +1,4 @@
+import unicodedata
 from paths import *
 
 import re
@@ -21,7 +22,8 @@ class PreProcesser:
         with open(data_file_path, "r", encoding="utf-8") as file:
             for line in file:
                 processed_size += len(line.encode("utf-8"))  # Mesurer en octets
-                cleaned_line = self.speaker_pattern.sub("", line)
+                cleaned_line = self.speaker_pattern.sub("", line).lower()
+                cleaned_line = unicodedata.normalize("NFKC", cleaned_line)
                 cleaned_lines.append(cleaned_line)
 
                 # Affichage du pourcentage (uniquement si changement)

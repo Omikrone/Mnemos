@@ -1,5 +1,5 @@
+from multiprocessing import Pool
 from paths import *
-import json
 import numpy as np
 
 from training.bpe import TokensTableManager, encode_text
@@ -37,14 +37,20 @@ class Tokenizer:
     def create_chunks(self) -> list[list]:
         """ Split the text into inputs and targets of CHUNK_SIZE tokens """
 
-        tokens = encode_text(self.text)
-        nb_chunks = len(tokens) // CHUNK_SIZE
+        lines = [line.strip() for line in self.text.split("\n") if line.strip()]
+        with Pool() as pool:
+            all_tokens = pool.map(encode_text, lines)
+        all_tokens = [token for sublist in all_tokens for token in sublist]
+        print(f"Number of tokens: {len(all_tokens)}")
+        print(f"All tokens: {all_tokens[:10]}")  # Afficher les 10 premiers tokens pour vérification
+
+        nb_chunks = len(all_tokens) // CHUNK_SIZE
 
         chunks = []
         for i in range(nb_chunks):
             chunks.append(
-                (tokens[i*CHUNK_SIZE : (i+1)*CHUNK_SIZE], # input
-                tokens[i*CHUNK_SIZE + 1 : (i+1)*CHUNK_SIZE + 1], # target
+                (all_tokens[i*CHUNK_SIZE : (i+1)*CHUNK_SIZE], # input
+                all_tokens[i*CHUNK_SIZE + 1 : (i+1)*CHUNK_SIZE + 1], # target
                 ))
 
         return chunks
