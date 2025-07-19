@@ -1,24 +1,163 @@
-from multiprocessing import Pool
-from paths import *
-import numpy as np
+from collections import defaultdict
+import json
+from pathlib import Path
+import pickle
+from paths import TABLE_PATH
+import heapq
 
-from training.bpe import TokensTableManager, encode_text
-
-
-CHUNK_SIZE = 64
-BATCH_SIZE = 8
-
+MAX_TOKENS = 2048  # Maximum number of tokens in the vocabulary
 
 
-class Tokenizer:
+class TokensTableManager:
 
-    table_manager : TokensTableManager
-    text : str
+    table_path : Path
 
-    def __init__(self, text):
+    def __init__(self, table_path : Path):
+        self.table_path = table_path
+
+
+    def load_table(self) -> dict:
+        """ Load the association table from a JSON file. """
+
+        if not (self.table_path).exists():
+            return {}
+        
+        with open(self.table_path, 'r') as file:
+            table = json.load(file)
+        return table
+
+
+    def save_table(self, table: dict) -> dict:
+        """ Save the association table to a JSON file. """
+
+        with open(self.table_path, 'w') as file:
+            json.dump(table, file, indent=4)
+
+
+class BPETokenizer:
+    """ Byte Pair Encoding (BPE) class for building and encoding text. """
+
+    text: str
+    table_manager: TokensTableManager
+    
+
+    def __init__(self, text: str):
+        """ Initialize the BPE class with the text to build the vocabulary. """
         self.text = text
-        self.table_manager = TokensTableManager(Path("training/table.json"))
+        self.table_manager = TokensTableManager(TABLE_PATH)
 
+        
+    def get_vocabulary_size(self) -> int:
+        """ Get the size of the vocabulary. """
+
+        association_table = self.table_manager.load_table()
+        return len(association_table)
+
+
+    def build(self) -> None:
+        """ Build the vocabulary from given text. """
+
+        sequences = [list(' ' + w) for w in self.text.split(" ")]
+        vocab = {char: idx for idx, char in enumerate(sorted(set("".join(self.text))), start=1)}
+        vocab['<unk>'] = 0
+        occurences = defaultdict(set)
+        merge_rules = list()
+
+        for i, seq in enumerate(sequences):
+            for j in range(len(seq) - 1):
+                pair = (seq[j], seq[j + 1])
+                occurences[pair].add(i)
+
+        while True:
+            
+            most_frequent_pair = max(occurences, key=lambda p: len(occurences[p]))
+            merge_rules.append(most_frequent_pair)
+            if len(occurences[most_frequent_pair]) <= 1:
+                break
+            
+            for seq_i in occurences[most_frequent_pair]:
+                seq = sequences[seq_i]
+                i = 0
+                while i < len(seq) - 1:
+                    pair = (seq[i], seq[i + 1])
+                    if pair == most_frequent_pair:
+                        new_token = seq[i] + seq[i + 1]
+                        seq[i] = new_token
+                        del seq[i + 1]
+                        if i > 0:
+                            left_pair = (seq[i - 1], new_token)
+                            occurences[left_pair].add(seq_i)
+
+                        if i < len(seq) - 1:
+                            right_pair = (new_token, seq[i + 1])
+                            occurences[right_pair].add(seq_i)
+                    else:
+                        i += 1
+            del occurences[most_frequent_pair]
+
+            if len(vocab) > MAX_TOKENS:
+                break
+            else:
+                print(len(vocab))
+
+            new_token = most_frequent_pair[0] + most_frequent_pair[1]
+            if new_token not in vocab:
+                vocab[new_token] = len(vocab)
+        self.table_manager.save_table(vocab)
+        with open("merges.pkl", "wb") as f:
+            pickle.dump(merge_rules, f)
+
+
+    def encode(self, text: str) -> list[int]:
+        with open("merges.pkl", "rb") as f:
+            merges = pickle.load(f)  # list of pairs
+
+        table = self.table_manager.load_table()
+        
+        merge_rank = {tuple(pair): i for i, pair in enumerate(merges)}
+        
+        # Initial sequence: characters with a space prefix for consistency
+        seq = [' ' + text[0]] + list(text[1:]) if text else []
+
+        # Build initial list of pairs with priority
+        pairs = []
+        for i in range(len(seq) - 1):
+            pair = (seq[i], seq[i + 1])
+            if pair in merge_rank:
+                heapq.heappush(pairs, (merge_rank[pair], i, pair))
+        
+        while pairs:
+            _, i, pair = heapq.heappop(pairs)
+            
+            # Validate the pair is still at the right position
+            if i >= len(seq) - 1 or (seq[i], seq[i + 1]) != pair:
+                continue
+            
+            # Merge the pair
+            merged = seq[i] + seq[i + 1]
+            seq[i] = merged
+            del seq[i + 1]
+            
+            # Reinsert surrounding pairs
+            if i > 0:
+                prev = (seq[i - 1], seq[i])
+                if prev in merge_rank:
+                    heapq.heappush(pairs, (merge_rank[prev], i - 1, prev))
+            if i < len(seq) - 1:
+                nxt = (seq[i], seq[i + 1])
+                if nxt in merge_rank:
+                    heapq.heappush(pairs, (merge_rank[nxt], i, nxt))
+        
+        tokens = []
+        for c in seq:
+            if c in table:
+                tokens.append(table[c])
+            else:            
+                print(f"Warning: Character '{c}' not found in vocabulary. Skipping.")
+                tokens.append(0)
+                continue
+        return tokens
+    
 
     def decode(self, vector : list) -> str:
         """ Convert a numeric vector to a text. """
@@ -32,40 +171,3 @@ class Tokenizer:
                     text += key
         
         return text
-
-
-    def create_chunks(self) -> list[list]:
-        """ Split the text into inputs and targets of CHUNK_SIZE tokens """
-
-        lines = [line.strip() for line in self.text.split("\n") if line.strip()]
-        with Pool() as pool:
-            all_tokens = pool.map(encode_text, lines)
-        all_tokens = [token for sublist in all_tokens for token in sublist]
-        print(f"Number of tokens: {len(all_tokens)}")
-        print(f"All tokens: {all_tokens[:10]}")  # Afficher les 10 premiers tokens pour vérification
-
-        nb_chunks = len(all_tokens) // CHUNK_SIZE
-
-        chunks = []
-        for i in range(nb_chunks):
-            chunks.append(
-                (all_tokens[i*CHUNK_SIZE : (i+1)*CHUNK_SIZE], # input
-                all_tokens[i*CHUNK_SIZE + 1 : (i+1)*CHUNK_SIZE + 1], # target
-                ))
-
-        return chunks
-
-
-    def create_batches(self, chunks : list) -> list[tuple[np.ndarray, np.ndarray]]:
-        
-        batches = list()
-        nb_batches = len(chunks) // BATCH_SIZE
-        for i in range(nb_batches):
-            inputs = [couple[0] for couple in chunks[i*BATCH_SIZE : (i+1)*BATCH_SIZE]]
-            targets = [couple[1] for couple in chunks[i*BATCH_SIZE : (i+1)*BATCH_SIZE]]
-
-            inputs_batch = np.array(inputs)
-            targets_batch = np.array(targets)
-            batches.append((inputs_batch, targets_batch))
-        
-        return batches

@@ -3,11 +3,11 @@ import pickle
 import numpy as np
 import json
 
-from training.tokenizer import Tokenizer
 from model.transformer_model import TransformerModel
+from training.batch import BatchBuilder
 from training.cross_entropy import CrossEntropyLoss
 from training.preprocesser import PreProcesser
-from training.bpe import bpe_builder, get_vocabulary_size, encode_text
+from training.tokenizer import BPETokenizer
 
 
 TRAINING_DATA_PATH = Path("training_data/train_small.txt")
@@ -17,7 +17,7 @@ SAVE_VOCABULARY_PATH = Path("save/vocabulary.json")
 
 class Trainer:
 
-    tokenizer : Tokenizer
+    tokenizer : BPETokenizer
     model : TransformerModel
     loss_fn : CrossEntropyLoss
     lr : int
@@ -25,9 +25,9 @@ class Trainer:
     def __init__(self):
         preprocesser = PreProcesser()
         cleaned_data = preprocesser(TRAINING_DATA_PATH)
-        self.tokenizer = Tokenizer(cleaned_data)
-        bpe_builder(cleaned_data)
-        vocab_size = get_vocabulary_size()
+        self.tokenizer = BPETokenizer(cleaned_data)
+        self.tokenizer.build()
+        vocab_size = self.tokenizer.get_vocabulary_size()
 
         self.model = TransformerModel(vocab_size)
         self.lr = 1e-3
@@ -48,18 +48,22 @@ class Trainer:
     def train(self):
 
         print("Starting training...")
-        chunks = self.tokenizer.create_chunks()
-        batches = self.tokenizer.create_batches(chunks)
+        batch_builder = BatchBuilder(self.tokenizer.text, self.tokenizer)
+        chunks = batch_builder.create_chunks()
+        batches = batch_builder.create_batches(chunks)
         total_batches = len(batches)
         print(f"Number of batches: {total_batches}")
 
-        for i, batch in enumerate(batches):
-            loss = self.train_step(batch[0], batch[1])
+        for epoch in range(1, 6):  # Example: 5 epochs
+            print(f"Epoch {epoch}/{5}")
+            np.random.shuffle(batches)
+            for i, batch in enumerate(batches):
+                loss = self.train_step(batch[0], batch[1])
 
-            # Affichage tous les 1 %
-            if i % max(1, total_batches // 100) == 0:
-                percent = (i / total_batches) * 100
-                print(f"[{i}/{total_batches}] {percent:.1f}% - Loss: {loss:.4f}")
+                # Affichage tous les 1 %
+                if i % max(1, total_batches // 100) == 0:
+                    percent = (i / total_batches) * 100
+                    print(f"[{i}/{total_batches}] {percent:.1f}% - Loss: {loss:.4f}")
 
         self.save_model()
         print("Model saved successfully.")

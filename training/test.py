@@ -5,9 +5,10 @@ import pickle
 import numpy as np
 
 from model.transformer_model import TransformerModel
+from training.batch import BatchBuilder
 from training.preprocesser import PreProcesser
-from training.tokenizer import Tokenizer
 from training.cross_entropy import CrossEntropyLoss
+from training.tokenizer import BPETokenizer
 
 
 TEST_DATA_FILE = Path("test_data/test1.txt")
@@ -16,14 +17,14 @@ TEST_DATA_FILE = Path("test_data/test1.txt")
 
 class Tester:
 
-    tokenizer: Tokenizer
+    tokenizer: BPETokenizer
     model: TransformerModel
     loss_fn: CrossEntropyLoss
 
     def __init__(self, model_path: Path = Path("save/model.pkl"), vocab_path: Path = Path("save/vocabulary.json")):
         preprocesser = PreProcesser()
         cleaned_data = preprocesser(TEST_DATA_FILE)
-        self.tokenizer = Tokenizer(cleaned_data)
+        self.tokenizer = BPETokenizer(cleaned_data)
         self.model = self.load_model(model_path, vocab_path)
         self.loss_fn = CrossEntropyLoss()
     
@@ -46,9 +47,10 @@ class Tester:
     
     
     def test(self):
-
-        chunks = self.tokenizer.create_chunks()
-        batches = self.tokenizer.create_batches(chunks)
+        print("Starting testing...")
+        batch_builder = BatchBuilder(self.tokenizer.text, self.tokenizer)
+        chunks = batch_builder.create_chunks()
+        batches = batch_builder.create_batches(chunks)
         global_loss = 0.0
 
         for batch in batches:

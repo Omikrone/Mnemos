@@ -1,11 +1,11 @@
 from model.embeddings import MAX_SEQUENCE_LENGTH
 from model.transformer_model import TransformerModel
-from training.bpe import encode_text
-from training.tokenizer import Tokenizer
 import numpy as np
 import pickle
 from pathlib import Path
 import json
+
+from training.tokenizer import BPETokenizer
 
 
 class Inference:
@@ -13,9 +13,9 @@ class Inference:
         self.model = self.load_model(model_path=Path("save/model.pkl"), vocab_path=Path("save/vocabulary.json"))
 
     def generate(self, prompt: str, max_length: int = 50) -> str:
-        self.tokenizer = Tokenizer(prompt)
-        tokens = np.array([encode_text(prompt)])  # (1, seq_len)
-        
+        self.tokenizer = BPETokenizer(prompt)
+        tokens = np.array([self.tokenizer.encode(prompt)])  # (1, seq_len)
+
         for _ in range(max_length):
             if tokens.shape[1] >= MAX_SEQUENCE_LENGTH:
                 break
