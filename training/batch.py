@@ -9,16 +9,18 @@ CHUNK_SIZE = 64
 BATCH_SIZE = 8
 
 
-
 class BatchBuilder:
 
     tokenizer: BPETokenizer
     text : str
 
+
     def __init__(self, text: str, tokenizer: BPETokenizer):
         """ Initialize the BatchBuilder with the text to build the vocabulary. """
+
         self.text = text
         self.tokenizer = tokenizer
+
 
     def create_chunks(self) -> list[list]:
         """ Split the text into inputs and targets of CHUNK_SIZE tokens """
@@ -40,6 +42,7 @@ class BatchBuilder:
 
 
     def create_batches(self, chunks : list) -> list[tuple[np.ndarray, np.ndarray]]:
+        """ Create batches of BATCH_SIZE from the chunks. """
         
         batches = list()
         nb_batches = len(chunks) // BATCH_SIZE

@@ -43,6 +43,7 @@ class BPETokenizer:
 
     def __init__(self, text: str):
         """ Initialize the BPE class with the text to build the vocabulary. """
+        
         self.text = text
         self.table_manager = TokensTableManager(TABLE_PATH)
 

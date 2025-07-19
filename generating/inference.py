@@ -3,7 +3,6 @@ from model.transformer_model import TransformerModel
 import numpy as np
 import pickle
 from pathlib import Path
-import json
 
 from training.tokenizer import BPETokenizer
 
@@ -32,7 +31,5 @@ class Inference:
 
         with open(model_path, "rb") as f:
             model_params = pickle.load(f)
-        with open(vocab_path, "r") as f:
-            vocab = json.load(f)
 
         return TransformerModel.from_params(model_params)

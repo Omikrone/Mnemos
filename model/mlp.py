@@ -4,10 +4,11 @@ from model.gradient import Param
 from model.embeddings import EMBEDDING_DIMENSION
 from model.save_model import MLPParams
 
-HIDDEN_DIMENSION = 128  # Dimension cachée pour le MLP
+HIDDEN_DIMENSION = 128  # Hidden dimension for the MLP
 
 
 class MLP:
+    """ Multi-Layer Perceptron (MLP) class for transforming input embeddings. """
 
     w_up : Param
     b_up : Param
@@ -19,19 +20,20 @@ class MLP:
 
 
     def __init__(self):
+        """ Initialize the MLP with random weights and biases. """
 
-        # Initialisation aléatoire des poids de la première et seconde couche
-        self.w_up = Param(np.random.randn(EMBEDDING_DIMENSION, HIDDEN_DIMENSION) * 0.01)  # Matrice de poids aggrandie (de plus grande dimension)
-        self.w_down = Param(np.random.randn(HIDDEN_DIMENSION, EMBEDDING_DIMENSION) * 0.01)  # Matrice de poids réduite (retour à la dimension d'entrée)
+        # Random initialization of weights for the first and second layers
+        self.w_up = Param(np.random.randn(EMBEDDING_DIMENSION, HIDDEN_DIMENSION) * 0.01)  # Expanded weight matrix (larger dimension)
+        self.w_down = Param(np.random.randn(HIDDEN_DIMENSION, EMBEDDING_DIMENSION) * 0.01)  # Reduced weight matrix (back to input dimension)
 
-        # Initialisation à 0 des biais
-        self.b_up = Param(np.zeros((1, HIDDEN_DIMENSION)))  # Biais de la première couche
-        self.b_down = Param(np.zeros((1, EMBEDDING_DIMENSION)))  # Biais de la seconde couche
+        # Random initialization of biases
+        self.b_up = Param(np.zeros((1, HIDDEN_DIMENSION)))  # Bias for the first layer
+        self.b_down = Param(np.zeros((1, EMBEDDING_DIMENSION)))  # Bias for the second layer
 
 
     @classmethod
     def from_params(cls, params: MLPParams) -> 'MLP':
-        """Crée une instance de MLP à partir des paramètres sauvegardés."""
+        """Create an MLP instance from saved parameters."""
 
         instance = cls()
         instance.w_up = Param(params.w_up)
@@ -42,17 +44,17 @@ class MLP:
 
 
     def feed_forward(self, inputs : np.ndarray) -> np.ndarray:
-        """ Applique la couche MLP sur les entrées données. """
+        """ Apply the MLP layer to the given inputs. """
 
         self.inputs = inputs
 
-        # Produit scalaire entre les entrées et les poids de la première couche, puis ajout du biais
+        # Dot product between the inputs and the weights of the first layer, then add the bias
         self.h = self.inputs @ self.w_up.value + self.b_up.value
 
-        # Application de la fonction d'activation ReLU (non-linéarité) -> Neurones inactifs sont mis à 0
+        # Apply the ReLU activation function (non-linearity) -> Inactive neurons are set to 0
         self.h_relu = np.maximum(0, self.h)
 
-        # Produit scalaire entre la sortie de la ReLU et les poids de la seconde couche, puis ajout du biais
+        # Dot product between the ReLU output and the weights of the second layer, then add the bias
         out = self.h_relu @ self.w_down.value + self.b_down.value
 
         return out
@@ -63,31 +65,31 @@ class MLP:
 
         B, T, _ = loss_gradient.shape
 
-        # Redimensionnement des matrices en 2D pour les multiplications matricielles, puis calcul ddu gradient de la seconde couche
-        # à partir du gradient de la perte
+        # Reshape matrices to 2D for matrix multiplications, then compute the gradient for the second layer
+        # from the loss gradient
         self.w_down.gradient += self.h_relu.reshape(B*T, -1).T @ loss_gradient.reshape(B*T, -1)
 
-        # Calcul du gradient du biais de la seconde couche
+        # Compute the gradient of the bias for the second layer
         self.b_down.gradient += np.sum(loss_gradient, axis=(0, 1))
 
-         # Calcul du gradient de la ReLU
+        # Compute the gradient of the ReLU
         dh_relu = loss_gradient @ self.w_down.value.T
-        dh_relu = dh_relu * (self.h > 0) # Dérivée de ReLU, 0 si h <= 0, sinon 1
+        dh_relu = dh_relu * (self.h > 0) # Derivative of ReLU, 0 if h <= 0, else 1
 
-        # Calcul du gradient de la première couche (même principe que pour la seconde)
+        # Compute the gradient for the first layer (same principle as for the second)
         self.w_up.gradient += self.inputs.reshape(B*T, -1).T @ dh_relu.reshape(B*T, -1)
 
-        # Calcul du gradient du biais de la première couche
+        # Compute the gradient of the bias for the first layer
         self.b_up.gradient += np.sum(dh_relu, axis=(0, 1))
 
-        # Calcul du gradient des entrées pour la couche précédente
+        # Compute the gradient of the inputs for the previous layer
         dx = dh_relu @ self.w_up.value.T
 
         return dx
     
 
     def step(self, lr : float):
-        """ Met à jour les poids et biais du MLP en fonction des gradients calculés. """
+        """ Update the MLP weights and biases based on the computed gradients. """
 
         self.w_up.step(lr)
         self.w_down.step(lr)
@@ -96,7 +98,7 @@ class MLP:
 
 
     def zero_grad(self):
-        """ Réinitialise les gradients des poids et biais du MLP. """
+        """ Reset the gradients of the MLP weights and biases. """
 
         self.w_up.zero_grad()
         self.w_down.zero_grad()
@@ -105,8 +107,8 @@ class MLP:
 
 
     def get_parameters(self):
-        """ Retourne les paramètres du MLP pour la sauvegarde. """
-        
+        """ Return the MLP parameters for saving. """
+
         return MLPParams(
             w_up=self.w_up.value,
             b_up=self.b_up.value,

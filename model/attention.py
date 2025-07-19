@@ -6,6 +6,7 @@ from model.save_model import AttentionParams
 
 
 class Attention:
+    """ Attention class for implementing the attention mechanism in the Transformer model. """
 
     input_embeddings : np.ndarray
     query_matrix : Param
@@ -17,15 +18,20 @@ class Attention:
     key : np.ndarray
     query : np.ndarray
 
-    def __init__(self):
 
-        # Initialisation alétoire des matrices de l'attention
+    def __init__(self):
+        """ Initialize the attention matrices with random values. """
+
+        # Random initialization of attention matrices
         self.query_matrix = Param(np.random.randn(EMBEDDING_DIMENSION, EMBEDDING_DIMENSION))
         self.key_matrix = Param(np.random.randn(EMBEDDING_DIMENSION, EMBEDDING_DIMENSION))
         self.value_matrix = Param(np.random.randn(EMBEDDING_DIMENSION, EMBEDDING_DIMENSION))
 
+
     @classmethod
     def from_params(cls, params: AttentionParams):
+        """ Create an Attention instance from saved parameters. """
+
         instance = cls()
         instance.query_matrix = Param(params.query_matrix)
         instance.key_matrix = Param(params.key_matrix)
@@ -44,12 +50,12 @@ class Attention:
 
         scores = self.query @ self.key.transpose(0, 2, 1) / np.sqrt(EMBEDDING_DIMENSION)
 
-        # 4. Softmax ligne par ligne pour normaliser
+        # Softmax to get attention weights
         exp_scores = np.exp(scores - np.max(scores, axis=-1, keepdims=True))  # stab numérique
         attention_weights = exp_scores / np.sum(exp_scores, axis=-1, keepdims=True)
         self.attention_weights = attention_weights
 
-        # On applique les poids d'attention aux valeurs
+        # Apply attention weights to the values
         self.output = self.attention_weights @ self.value
         return self.output
     
@@ -58,26 +64,26 @@ class Attention:
         B, T, D = d_output.shape
         sqrt_d = np.sqrt(D)
 
-        # Gradient par rapport à value
+        # Gradient with respect to value
         d_value = self.attention_weights.transpose(0, 2, 1) @ d_output  # (B, T, D)
 
-        # Gradient par rapport à attention_weights
+        # Gradient with respect to attention_weights
         d_weights = d_output @ self.value.transpose(0, 2, 1)  # (B, T, T)
 
-        # Backpropagation du softmax (stabilisée)
+        # Backpropagation through softmax (stabilized)
         softmax = self.attention_weights
         d_scores = d_weights * softmax * (1 - softmax)
 
-        # Gradient par rapport à query et key
+        # Gradient with respect to query and key
         d_query = d_scores @ self.key / sqrt_d
         d_key = d_scores.transpose(0, 2, 1) @ self.query / sqrt_d
 
-        # Gradient par rapport aux poids
+        # Gradient with respect to weights
         self.query_matrix.gradient += self.input_embeddings.reshape(B*T, D).T @ d_query.reshape(B*T, D)
         self.key_matrix.gradient += self.input_embeddings.reshape(B*T, D).T @ d_key.reshape(B*T, D)
         self.value_matrix.gradient += self.input_embeddings.reshape(B*T, D).T @ d_value.reshape(B*T, D)
 
-        # Gradient par rapport à l’entrée (input embeddings)
+        # Gradient with respect to input embeddings
         d_input_q = d_query @ self.query_matrix.value.T
         d_input_k = d_key @ self.key_matrix.value.T
         d_input_v = d_value @ self.value_matrix.value.T
@@ -86,11 +92,16 @@ class Attention:
     
 
     def step(self, lr : float):
+        """ Update the parameters of the attention mechanism with gradient descent. """
+
         self.query_matrix.step(lr)
         self.value_matrix.step(lr)
         self.key_matrix.step(lr)
 
+
     def zero_grad(self):
+        """ Reset the gradients of the attention parameters. """
+
         self.query_matrix.zero_grad()
         self.value_matrix.zero_grad()
         self.key_matrix.zero_grad()
@@ -101,7 +112,10 @@ class Attention:
         self.key = None
         self.value = None
 
+
     def get_parameters(self):
+        """ Return the parameters of the attention mechanism for saving. """
+
         return AttentionParams(
             query_matrix=self.query_matrix.value,
             key_matrix=self.key_matrix.value,

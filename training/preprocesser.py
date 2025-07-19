@@ -5,12 +5,20 @@ import re
 import os
 
 
+MIN_LENGTH_LINE = 10
+
+
 class PreProcesser:
+    """ PreProcesser class for cleaning and normalizing text data. """
+
+    speaker_pattern: re.Pattern
+
     def __init__(self):
         self.speaker_pattern = re.compile(r"\[.*?\]")
 
+
     def __call__(self, data_file_path: Path) -> str:
-        """ Nettoie le fichier de données en supprimant les balises de locuteur. """
+        """ Clean and normalize the text data from the given file path. """
 
         cleaned_lines = []
 
@@ -21,10 +29,17 @@ class PreProcesser:
 
         with open(data_file_path, "r", encoding="utf-8") as file:
             for line in file:
-                processed_size += len(line.encode("utf-8"))  # Mesurer en octets
-                cleaned_line = self.speaker_pattern.sub("", line).lower()
-                cleaned_line = unicodedata.normalize("NFKC", cleaned_line)
+
+                # Nettoyage et normalisation de la ligne
+                cleaned_line = self._clean_text(line)
+                cleaned_line = self._normalize_whitespace(cleaned_line)
+
+                if len(cleaned_line) < MIN_LENGTH_LINE:
+                    continue
                 cleaned_lines.append(cleaned_line)
+
+                # Mise à jour de la taille traitée
+                processed_size += len(line.encode("utf-8"))
 
                 # Affichage du pourcentage (uniquement si changement)
                 percent = int((processed_size / total_size) * 100)
@@ -34,3 +49,22 @@ class PreProcesser:
 
         print("\nPrétraitement terminé.")
         return "".join(cleaned_lines)
+    
+
+    def _clean_text(self, text: str) -> str:
+        """ Clean and normalize the text. """
+
+        text = self.speaker_pattern.sub("", text)
+        text = unicodedata.normalize("NFKC", text)
+        text = text.replace("’", "'").replace("‘", "'")
+        text = text.replace("“", '"').replace("”", '"')
+        return text.lower()
+
+
+    def _normalize_whitespace(self, text: str) -> str:
+        """ Normalize whitespace in the text. """
+        
+        text = re.sub(r"\s+", " ", text)       # Delete extra spaces
+        text = re.sub(r"\s*\n\s*", "\n", text)  # Delete newlines with spaces around
+        text = text.strip()
+        return text

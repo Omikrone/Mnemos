@@ -2,6 +2,7 @@ import numpy as np
 
 
 class CrossEntropyLoss:
+    """ CrossEntropyLoss class for computing the cross-entropy loss and its gradient. """
 
     softmax_value : float
     logits : np.ndarray
@@ -15,44 +16,44 @@ class CrossEntropyLoss:
 
 
     def _softmax(self, logits: np.ndarray) -> np.ndarray:
-        """ Normalise les logits pour en faire une distribution de probabilité. """
+        """ Normalize logits to probabilities using softmax. """
 
         e_x = np.exp(logits - np.max(logits, axis=-1, keepdims=True))  # stabilité numérique
         return e_x / np.sum(e_x, axis=-1, keepdims=True)
 
 
     def __call__(self, logits: np.ndarray, targets: np.ndarray) -> float:
-        """ Calcule la perte d'entropie croisée entre les valeurs prédites et les cibles. """
+        """ Compute the cross-entropy loss between the predicted values and the targets. """
 
         self.logits = logits
         self.targets = targets
 
-        # On applique softmax aux logits pour obtenir les probabilités
+        # Apply softmax to the logits to get the probabilities
         self.softmax_value = self._softmax(logits)
 
-        # On extrait les probabilités des tokens cibles
+        # Extract the probabilities of the target tokens
         batch_size, seq_len, _ = logits.shape
         batch_indices = np.arange(batch_size)[:, None]
         seq_indices = np.arange(seq_len)[None, :]
         correct_token_probs = self.softmax_value[batch_indices, seq_indices, targets]
 
-        # On calcule la perte d'entropie croisée = -log(probabilité correcte)
+        # Compute the cross-entropy loss = -log(correct probability)
         loss = -np.log(correct_token_probs + 1e-9).mean()
         return loss
     
 
     def backward(self, logits: np.ndarray, targets: np.ndarray) -> float:
-        """ Calcule le gradient de la perte par rapport aux valeurs prédites. """
-        
+        """ Compute the gradient of the loss with respect to the predicted values. """
+
         batch_size, seq_len, _ = logits.shape
         predicted_probs = self._softmax(logits)
 
-        # On forme un vecteur one-hot des cibles pour le calcul du gradient
+        # Create a one-hot vector of the targets for gradient calculation
         real_class = np.zeros_like(predicted_probs)
         batch_indices = np.arange(batch_size)[:, None]
         seq_indices = np.arange(seq_len)[None, :]
         real_class[batch_indices, seq_indices, targets] = 1
 
-        # Calcul du gradient de la perte -> dérivée partielle de la perte par rapport aux logits
+        # Compute the gradient of the loss -> partial derivative of the loss with respect to the logits
         grad = (predicted_probs - real_class) / (batch_size * seq_len)
         return grad
