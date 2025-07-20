@@ -1,5 +1,6 @@
 from pathlib import Path
 import pickle
+import sys
 import numpy as np
 import json
 
@@ -10,10 +11,11 @@ from training.preprocesser import PreProcesser
 from training.tokenizer import BPETokenizer
 
 
-TRAINING_DATA_PATH = Path("training_data/train_small.txt")
+TRAINING_DATA_PATH = Path("training_data/train.txt")
 SAVE_MODEL_PATH = Path("save/model.pkl")
 SAVE_VOCABULARY_PATH = Path("save/vocabulary.json")
 LEARNING_RATE = 1e-3
+NB_EPOCHS = 1
 
 
 class Trainer:
@@ -58,7 +60,12 @@ class Trainer:
     def train(self):
         """ Run the training loop and save the model after training. """
 
-        print("Starting training...")
+        print("\nStarting training...")
+        print("Creating batches for training...")
+
+        if not TRAINING_DATA_PATH.exists():
+            print(f"Training data file not found: {TRAINING_DATA_PATH}")
+            return
 
         # Perform the chunking and create batches from the training data
         batch_builder = BatchBuilder(self.tokenizer.text, self.tokenizer)
@@ -66,11 +73,11 @@ class Trainer:
         batches = batch_builder.create_batches(chunks)
         total_batches = len(batches)
 
-        print(f"Number of batches: {total_batches}")
+        print(f"Number of batches to train: {total_batches}")
 
-        # Training loop with 5 epochs
-        for epoch in range(1, 6):
-            print(f"Epoch {epoch}/{5}")
+        # Training loop with multiple epochs
+        for epoch in range(1, NB_EPOCHS + 1):
+            print(f"Epoch {epoch}/{NB_EPOCHS}")
             np.random.shuffle(batches)
 
             for i, batch in enumerate(batches):
@@ -79,8 +86,8 @@ class Trainer:
                 # Display progress every 1% of the total batches
                 if i % max(1, total_batches // 100) == 0:
                     percent = (i / total_batches) * 100
-                    print(f"[{i}/{total_batches}] {percent:.1f}% - Loss: {loss:.4f}")
-
+                    sys.stdout.write(f"\r[{i}/{total_batches}] {percent:.1f}% - Loss: {loss:.4f}")
+                    sys.stdout.flush()
         self.save_model()
         print("Model saved successfully.")
 

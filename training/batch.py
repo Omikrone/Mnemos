@@ -1,8 +1,9 @@
+from codecs import encode
 from multiprocessing import Pool
 from paths import *
 import numpy as np
 
-from training.tokenizer import TokensTableManager, BPETokenizer
+from training.tokenizer import BPETokenizer
 
 
 CHUNK_SIZE = 64
@@ -10,6 +11,7 @@ BATCH_SIZE = 8
 
 
 class BatchBuilder:
+    """ BatchBuilder class for creating batches of training data. """
 
     tokenizer: BPETokenizer
     text : str
@@ -27,7 +29,7 @@ class BatchBuilder:
 
         lines = [line.strip() for line in self.text.split("\n") if line.strip()]
         with Pool() as pool:
-            all_tokens = pool.map(self.tokenizer.encode, lines)
+            all_tokens = pool.map(encode, lines)
         all_tokens = [token for sublist in all_tokens for token in sublist]
         nb_chunks = len(all_tokens) // CHUNK_SIZE
 

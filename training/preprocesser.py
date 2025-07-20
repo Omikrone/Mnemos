@@ -44,10 +44,10 @@ class PreProcesser:
                 # Affichage du pourcentage (uniquement si changement)
                 percent = int((processed_size / total_size) * 100)
                 if percent != last_printed_percent:
-                    print(f"\rPrétraitement : {percent}%", end="")
+                    print(f"\rPreprocessing: {percent}%", end="")
                     last_printed_percent = percent
 
-        print("\nPrétraitement terminé.")
+        print("\nPreprocessing finished.")
         return "".join(cleaned_lines)
     
 
