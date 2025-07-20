@@ -1,5 +1,6 @@
 from pathlib import Path
 import pickle
+import sys
 
 import numpy as np
 
@@ -23,6 +24,10 @@ class Tester:
 
     def __init__(self, model_path: Path = Path("save/model.pkl"), vocab_path: Path = Path("save/vocabulary.json")):
         """ Initialize the Tester with the model and tokenizer. """
+
+        if not model_path.exists() or not vocab_path.exists():
+            print("Model or vocabulary file not found. Please train the model first.")
+            sys.exit(1)
 
         # Load the different components
         preprocesser = PreProcesser()

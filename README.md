@@ -40,14 +40,14 @@ Mnemos is designed to be user-friendly and straightforward. It provides a simple
 
 To train the model, follow these steps:
 1. Prepare your dataset in a text file format and rename it to `train.txt`.
-2. Place the `train.txt` file in the `training_data/` directory.
+2. Place the `train.txt` file in the `training_data/` directory at the root of the project (create this directory if it doesn't exist).
 3. Choose the training option in the main menu.
 
 ### Testing Instructions
 
 If you want to test the model, follow these steps:
 1. Prepare your dataset in a text file format and rename it to `test.txt`.
-2. Place the `test.txt` file in the `test_data/` directory.
+2. Place the `test.txt` file in the `test_data/` directory at the root of the project (create this directory if it doesn't exist).
 3. Choose the testing option in the main menu.
 
 ### Inference Instructions
