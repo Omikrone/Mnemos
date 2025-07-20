@@ -96,9 +96,13 @@ class Trainer:
         """ Save the model parameters and vocabulary to files. """
         
         model_parameters = self.model.get_parameters()
+        if not SAVE_MODEL_PATH.parent.exists():
+            SAVE_MODEL_PATH.parent.mkdir(parents=True)
         with open(SAVE_MODEL_PATH, "wb") as f:
             pickle.dump(model_parameters, f)
 
         vocabulary = self.tokenizer.table_manager.load_table()
+        if not SAVE_VOCABULARY_PATH.parent.exists():
+            SAVE_VOCABULARY_PATH.parent.mkdir(parents=True)
         with open(SAVE_VOCABULARY_PATH, "w") as f:
             json.dump(vocabulary, f, indent=4)

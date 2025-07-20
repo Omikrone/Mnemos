@@ -20,7 +20,7 @@ Mnemos includes the following user features:
 To install Mnemos, clone the repository and install the required dependencies:
 
 ```bash
-git clone https://github.com/Omikrone/Mnemos.git
+git clone https://github.com/Omikrone/Mnemos.git mnemos
 cd mnemos
 pip install -r requirements.txt
 ```
@@ -39,7 +39,7 @@ Mnemos is designed to be user-friendly and straightforward. It provides a simple
 ### Training Instructions
 
 To train the model, follow these steps:
-1. Prepare your dataset in a text file format and rename it to `train.txt`.
+1. Prepare your dataset in a text file format and rename it to `train.txt`. The size of the training dataset should be between 1 MB and 25 MB for effective training.
 2. Place the `train.txt` file in the `training_data/` directory at the root of the project (create this directory if it doesn't exist).
 3. Choose the training option in the main menu.
 
