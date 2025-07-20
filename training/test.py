@@ -11,7 +11,7 @@ from training.cross_entropy import CrossEntropyLoss
 from training.tokenizer import BPETokenizer
 
 
-TEST_DATA_FILE = Path("test_data/test1.txt")
+TEST_DATA_FILE = Path("test_data/test.txt")
 
 
 
