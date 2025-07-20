@@ -1,8 +1,8 @@
 import unicodedata
-from paths import *
-
 import re
 import os
+
+from paths import *
 
 
 MIN_LENGTH_LINE = 10

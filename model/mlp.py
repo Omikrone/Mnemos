@@ -1,10 +1,8 @@
 import numpy as np
 
 from model.gradient import Param
-from model.embeddings import EMBEDDING_DIMENSION
 from model.save_model import MLPParams
-
-HIDDEN_DIMENSION = 128  # Hidden dimension for the MLP
+from params import EMBEDDING_DIM, HIDDEN_DIM
 
 
 class MLP:
@@ -23,12 +21,12 @@ class MLP:
         """ Initialize the MLP with random weights and biases. """
 
         # Random initialization of weights for the first and second layers
-        self.w_up = Param(np.random.randn(EMBEDDING_DIMENSION, HIDDEN_DIMENSION) * 0.01)  # Expanded weight matrix (larger dimension)
-        self.w_down = Param(np.random.randn(HIDDEN_DIMENSION, EMBEDDING_DIMENSION) * 0.01)  # Reduced weight matrix (back to input dimension)
+        self.w_up = Param(np.random.randn(EMBEDDING_DIM, HIDDEN_DIM) * 0.01)  # Expanded weight matrix (larger dimension)
+        self.w_down = Param(np.random.randn(HIDDEN_DIM, EMBEDDING_DIM) * 0.01)  # Reduced weight matrix (back to input dimension)
 
         # Random initialization of biases
-        self.b_up = Param(np.zeros((1, HIDDEN_DIMENSION)))  # Bias for the first layer
-        self.b_down = Param(np.zeros((1, EMBEDDING_DIMENSION)))  # Bias for the second layer
+        self.b_up = Param(np.zeros((1, HIDDEN_DIM)))  # Bias for the first layer
+        self.b_down = Param(np.zeros((1, EMBEDDING_DIM)))  # Bias for the second layer
 
 
     @classmethod

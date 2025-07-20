@@ -1,11 +1,7 @@
 import numpy as np
 
 from model.gradient import Param
-
-
-EMBEDDING_DIMENSION = 64
-MAX_SEQUENCE_LENGTH = 64
-BATCH_SIZE = 8
+from params import EMBEDDING_DIM, MAX_SEQUENCE_LENGTH
 
 
 class TokenEmbedding:
@@ -22,7 +18,7 @@ class TokenEmbedding:
 
         # Random initialization of embedding vectors
         self.matrix = Param(np.random.uniform(
-            low=-0.1, high=0.1, size=(vocab_size, EMBEDDING_DIMENSION)
+            low=-0.1, high=0.1, size=(vocab_size, EMBEDDING_DIM)
         ))
 
 
@@ -75,7 +71,7 @@ class PositionEmbedding:
         # Random initialization of embedding vectors
 
         self.matrix = Param(np.random.uniform(
-            low=-0.1, high=0.1, size=(MAX_SEQUENCE_LENGTH, EMBEDDING_DIMENSION)
+            low=-0.1, high=0.1, size=(MAX_SEQUENCE_LENGTH, EMBEDDING_DIM)
         ))
     
     @classmethod
@@ -96,7 +92,7 @@ class PositionEmbedding:
         self.seq_len = seq_len  # to save for backward
 
         positions = self.matrix.value[:seq_len]
-        return np.broadcast_to(positions, (batch_size, seq_len, EMBEDDING_DIMENSION))
+        return np.broadcast_to(positions, (batch_size, seq_len, EMBEDDING_DIM))
 
 
     def backward(self, d_output: np.ndarray):

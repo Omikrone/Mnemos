@@ -1,7 +1,6 @@
 from pathlib import Path
 import pickle
 import sys
-
 import numpy as np
 
 from model.transformer_model import TransformerModel

@@ -1,8 +1,8 @@
 import numpy as np
 
-from model.embeddings import EMBEDDING_DIMENSION
 from model.gradient import Param
 from model.save_model import AttentionParams
+from params import EMBEDDING_DIM
 
 
 class Attention:
@@ -23,9 +23,9 @@ class Attention:
         """ Initialize the attention matrices with random values. """
 
         # Random initialization of attention matrices
-        self.query_matrix = Param(np.random.randn(EMBEDDING_DIMENSION, EMBEDDING_DIMENSION))
-        self.key_matrix = Param(np.random.randn(EMBEDDING_DIMENSION, EMBEDDING_DIMENSION))
-        self.value_matrix = Param(np.random.randn(EMBEDDING_DIMENSION, EMBEDDING_DIMENSION))
+        self.query_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM))
+        self.key_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM))
+        self.value_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM))
 
 
     @classmethod
@@ -48,7 +48,7 @@ class Attention:
         self.key = input_embeddings @ self.key_matrix.value
         self.value = input_embeddings @ self.value_matrix.value
 
-        scores = self.query @ self.key.transpose(0, 2, 1) / np.sqrt(EMBEDDING_DIMENSION)
+        scores = self.query @ self.key.transpose(0, 2, 1) / np.sqrt(EMBEDDING_DIM)
 
         # Softmax to get attention weights
         exp_scores = np.exp(scores - np.max(scores, axis=-1, keepdims=True))  # stab numérique

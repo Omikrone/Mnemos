@@ -1,13 +1,10 @@
 from codecs import encode
 from multiprocessing import Pool
-from paths import *
 import numpy as np
 
 from training.tokenizer import BPETokenizer
-
-
-CHUNK_SIZE = 64
-BATCH_SIZE = 8
+from paths import *
+from params import CHUNK_SIZE, BATCH_SIZE
 
 
 class BatchBuilder:

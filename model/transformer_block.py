@@ -4,8 +4,8 @@ from model.gradient import Param
 from model.layer_norm import LayerNorm
 from model.mlp import MLP
 from model.attention import Attention
-from model.embeddings import EMBEDDING_DIMENSION
 from model.save_model import TransformerBlockParams
+from params import EMBEDDING_DIM, HIDDEN_DIM
 
 
 class TransformerBlock:
@@ -23,11 +23,11 @@ class TransformerBlock:
     def __init__(self, vocab_size : int):
         """ Initialize the Transformer block with layer normalization, attention, and MLP layers. """
 
-        self.ln1 = LayerNorm(EMBEDDING_DIMENSION)
-        self.w_out = Param(np.random.randn(EMBEDDING_DIMENSION, vocab_size) * 0.02)
+        self.ln1 = LayerNorm(EMBEDDING_DIM)
+        self.w_out = Param(np.random.randn(EMBEDDING_DIM, vocab_size) * 0.02)
         self.b_out = Param(np.zeros((vocab_size,)))
         self.self_attention = Attention()
-        self.ln2 = LayerNorm(EMBEDDING_DIMENSION)
+        self.ln2 = LayerNorm(EMBEDDING_DIM)
         self.mlp = MLP()
 
 

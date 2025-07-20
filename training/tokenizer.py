@@ -3,9 +3,9 @@ import json
 from pathlib import Path
 import pickle
 import heapq
-from paths import MERGES_PATH, VOCABULARY_PATH
 
-MAX_TOKENS = 1024  # Maximum number of tokens in the vocabulary
+from paths import MERGES_PATH, VOCABULARY_PATH
+from params import NB_MAX_TOKENS
 
 
 class TokensTableManager:
@@ -96,7 +96,7 @@ class BPETokenizer:
                         i += 1
             del occurences[most_frequent_pair]
 
-            if len(vocab) > MAX_TOKENS:
+            if len(vocab) > NB_MAX_TOKENS:
                 break
 
             new_token = most_frequent_pair[0] + most_frequent_pair[1]

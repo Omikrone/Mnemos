@@ -1,6 +1,8 @@
 import numpy as np
+
 from model.gradient import Param
 from model.save_model import LayerNormParams
+from params import EPS
 
 
 class LayerNorm:
@@ -17,7 +19,7 @@ class LayerNorm:
     x_norm : np.ndarray
 
 
-    def __init__(self, dim, eps=1e-5):
+    def __init__(self, dim, eps=EPS):
 
         # Initialisation of the parameters gamma and beta
         self.gamma = Param(np.ones((1, 1, dim))) # Weights for normalization

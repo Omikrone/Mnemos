@@ -9,10 +9,7 @@ from training.cross_entropy import CrossEntropyLoss
 from training.preprocesser import PreProcesser
 from training.tokenizer import BPETokenizer
 from paths import TRAINING_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
-
-
-LEARNING_RATE = 1e-3
-NB_EPOCHS = 1
+from params import LEARNING_RATE, NB_EPOCHS
 
 
 class Trainer:
