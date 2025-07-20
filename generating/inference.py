@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 from pathlib import Path
 
-from training.tokenizer import BPETokenizer
+from training.tokenizer import BPETokenizer, encode
 from model.embeddings import MAX_SEQUENCE_LENGTH
 from model.transformer_model import TransformerModel
 
@@ -27,7 +27,7 @@ class Inference:
         """ Generate text based on the input prompt. """
         
         self.tokenizer = BPETokenizer(prompt)
-        tokens = np.array([self.tokenizer.encode(prompt)])  # (1, seq_len)
+        tokens = np.array([encode(prompt)])  # (1, seq_len)
 
         for _ in range(max_length):
             if tokens.shape[1] >= MAX_SEQUENCE_LENGTH:

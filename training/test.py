@@ -28,7 +28,7 @@ class Tester:
         preprocesser = PreProcesser()
         cleaned_data = preprocesser(TEST_DATA_FILE)
         self.tokenizer = BPETokenizer(cleaned_data)
-        self.model = self.load_model(model_path, vocab_path)
+        self.model = self.load_model(model_path)
         self.loss_fn = CrossEntropyLoss()
     
 
