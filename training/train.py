@@ -1,4 +1,3 @@
-from pathlib import Path
 import pickle
 import sys
 import numpy as np
@@ -9,11 +8,9 @@ from training.batch import BatchBuilder
 from training.cross_entropy import CrossEntropyLoss
 from training.preprocesser import PreProcesser
 from training.tokenizer import BPETokenizer
+from paths import TRAINING_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
 
 
-TRAINING_DATA_PATH = Path("training_data/train.txt")
-SAVE_MODEL_PATH = Path("save/model.pkl")
-SAVE_VOCABULARY_PATH = Path("save/vocabulary.json")
 LEARNING_RATE = 1e-3
 NB_EPOCHS = 1
 
@@ -96,13 +93,13 @@ class Trainer:
         """ Save the model parameters and vocabulary to files. """
         
         model_parameters = self.model.get_parameters()
-        if not SAVE_MODEL_PATH.parent.exists():
-            SAVE_MODEL_PATH.parent.mkdir(parents=True)
-        with open(SAVE_MODEL_PATH, "wb") as f:
+        if not MODEL_PATH.parent.exists():
+            MODEL_PATH.parent.mkdir(parents=True)
+        with open(MODEL_PATH, "wb") as f:
             pickle.dump(model_parameters, f)
 
         vocabulary = self.tokenizer.table_manager.load_table()
-        if not SAVE_VOCABULARY_PATH.parent.exists():
-            SAVE_VOCABULARY_PATH.parent.mkdir(parents=True)
-        with open(SAVE_VOCABULARY_PATH, "w") as f:
+        if not VOCABULARY_PATH.parent.exists():
+            VOCABULARY_PATH.parent.mkdir(parents=True)
+        with open(VOCABULARY_PATH, "w") as f:
             json.dump(vocabulary, f, indent=4)

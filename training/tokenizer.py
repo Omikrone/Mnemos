@@ -2,8 +2,8 @@ from collections import defaultdict
 import json
 from pathlib import Path
 import pickle
-from paths import TABLE_PATH
 import heapq
+from paths import MERGES_PATH, VOCABULARY_PATH
 
 MAX_TOKENS = 1024  # Maximum number of tokens in the vocabulary
 
@@ -45,9 +45,8 @@ class BPETokenizer:
         """ Initialize the BPE class with the text to build the vocabulary. """
         
         self.text = text
-        self.table_manager = TokensTableManager(TABLE_PATH)
+        self.table_manager = TokensTableManager(VOCABULARY_PATH)
 
-        
     def get_vocabulary_size(self) -> int:
         """ Get the size of the vocabulary. """
 
@@ -104,7 +103,7 @@ class BPETokenizer:
             if new_token not in vocab:
                 vocab[new_token] = len(vocab)
         self.table_manager.save_table(vocab)
-        with open("training/merges.pkl", "wb") as f:
+        with open(MERGES_PATH, "wb") as f:
             pickle.dump(merge_rules, f)
         print(f"Vocabulary built with {len(vocab)} tokens.")
     
@@ -124,10 +123,10 @@ class BPETokenizer:
 
 
 def encode(text: str) -> list[int]:
-    with open("training/merges.pkl", "rb") as f:
+    with open(MERGES_PATH, "rb") as f:
         merges = pickle.load(f)  # list of pairs
 
-    table_manager = TokensTableManager(TABLE_PATH)
+    table_manager = TokensTableManager(VOCABULARY_PATH)
     table = table_manager.load_table()
     
     merge_rank = {tuple(pair): i for i, pair in enumerate(merges)}

@@ -9,9 +9,7 @@ from training.batch import BatchBuilder
 from training.preprocesser import PreProcesser
 from training.cross_entropy import CrossEntropyLoss
 from training.tokenizer import BPETokenizer
-
-
-TEST_DATA_FILE = Path("test_data/test.txt")
+from paths import TEST_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
 
 
 
@@ -22,7 +20,7 @@ class Tester:
     model: TransformerModel
     loss_fn: CrossEntropyLoss
 
-    def __init__(self, model_path: Path = Path("save/model.pkl"), vocab_path: Path = Path("save/vocabulary.json")):
+    def __init__(self, model_path: Path = MODEL_PATH, vocab_path: Path = VOCABULARY_PATH):
         """ Initialize the Tester with the model and tokenizer. """
 
         if not model_path.exists() or not vocab_path.exists():
@@ -31,7 +29,7 @@ class Tester:
 
         # Load the different components
         preprocesser = PreProcesser()
-        cleaned_data = preprocesser(TEST_DATA_FILE)
+        cleaned_data = preprocesser(TEST_DATA_PATH)
         self.tokenizer = BPETokenizer(cleaned_data)
         self.model = self.load_model(model_path)
         self.loss_fn = CrossEntropyLoss()
