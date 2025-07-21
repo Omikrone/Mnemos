@@ -8,12 +8,14 @@ from paths import MERGES_PATH, VOCABULARY_PATH
 from params import NB_MAX_TOKENS
 
 
-class TokensTableManager:
+class VocabularyManager:
 
     table_path : Path
+    merges_path : Path
 
-    def __init__(self, table_path : Path):
+    def __init__(self, table_path : Path, merges_path : Path):
         self.table_path = table_path
+        self.merges_path = merges_path
 
 
     def load_table(self) -> dict:
@@ -25,27 +27,49 @@ class TokensTableManager:
         with open(self.table_path, 'r') as file:
             table = json.load(file)
         return table
+    
+    def load_merges(self) -> list:
+        """ Load the merge rules from a pickle file. """
+
+        if not self.merges_path.exists():
+            return []
+        
+        with open(self.merges_path, "rb") as f:
+            merges = pickle.load(f)
+        return merges
 
 
-    def save_table(self, table: dict) -> dict:
+    def save_table(self, table: dict) -> None:
         """ Save the association table to a JSON file. """
 
+        if not self.table_path.parent.exists():
+            self.table_path.parent.mkdir(parents=True)
         with open(self.table_path, 'w') as file:
             json.dump(table, file, indent=4)
+
+
+    def save_merges(self, merges: list) -> None:
+        """ Save the merge rules to a pickle file. """
+
+        if not self.merges_path.parent.exists():
+            self.merges_path.parent.mkdir(parents=True)
+        with open(self.merges_path, "wb") as f:
+            pickle.dump(merges, f)
 
 
 class BPETokenizer:
     """ Byte Pair Encoding (BPE) class for building and encoding text. """
 
     text: str
-    table_manager: TokensTableManager
-    
+    table_manager: VocabularyManager
+
 
     def __init__(self, text: str):
         """ Initialize the BPE class with the text to build the vocabulary. """
         
         self.text = text
-        self.table_manager = TokensTableManager(VOCABULARY_PATH)
+        self.table_manager = VocabularyManager(VOCABULARY_PATH, MERGES_PATH)
+
 
     def get_vocabulary_size(self) -> int:
         """ Get the size of the vocabulary. """
@@ -58,9 +82,18 @@ class BPETokenizer:
         """ Build the vocabulary from given text. """
 
         print("Building vocabulary, this may take a while...")
+
+        vocab = dict()
         sequences = [list(' ' + w) for w in self.text.split(" ")]
-        vocab = {char: idx for idx, char in enumerate(sorted(set("".join(self.text))), start=1)}
+
+        # Initialize vocabulary with base letters and space
+        base_letters = list(set(''.join(self.text)))
         vocab['<unk>'] = 0
+        base_letters.extend([' ' + c for c in base_letters])
+        for c in base_letters:
+            if c not in vocab:
+                vocab[c] = len(vocab)
+        
         occurences = defaultdict(set)
         merge_rules = list()
 
@@ -102,9 +135,10 @@ class BPETokenizer:
             new_token = most_frequent_pair[0] + most_frequent_pair[1]
             if new_token not in vocab:
                 vocab[new_token] = len(vocab)
+                
         self.table_manager.save_table(vocab)
-        with open(MERGES_PATH, "wb") as f:
-            pickle.dump(merge_rules, f)
+        self.table_manager.save_merges(merge_rules)
+
         print(f"Vocabulary built with {len(vocab)} tokens.")
     
 
@@ -123,11 +157,11 @@ class BPETokenizer:
 
 
 def encode(text: str) -> list[int]:
-    with open(MERGES_PATH, "rb") as f:
-        merges = pickle.load(f)  # list of pairs
+    """ Encode a text into a list of integers using BPE. """
 
-    table_manager = TokensTableManager(VOCABULARY_PATH)
+    table_manager = VocabularyManager(VOCABULARY_PATH, MERGES_PATH)
     table = table_manager.load_table()
+    merges = table_manager.load_merges()
     
     merge_rank = {tuple(pair): i for i, pair in enumerate(merges)}
     

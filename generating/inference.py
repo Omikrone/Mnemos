@@ -4,8 +4,9 @@ import pickle
 from pathlib import Path
 
 from training.tokenizer import BPETokenizer, encode
-from model.embeddings import MAX_SEQUENCE_LENGTH
 from model.transformer_model import TransformerModel
+from paths import MODEL_PATH, VOCABULARY_PATH
+from params import MAX_SEQUENCE_LENGTH
 
 
 class Inference:
@@ -17,10 +18,10 @@ class Inference:
     def __init__(self):
         """ Initialize the Inference with the trained model and tokenizer. """
 
-        if not Path("save/model.pkl").exists() or not Path("save/vocabulary.json").exists():
+        if not MODEL_PATH.exists() or not VOCABULARY_PATH.exists():
             print("Model or vocabulary file not found. Please train the model first.")
             sys.exit(1)
-        self.model = self.load_model(model_path=Path("save/model.pkl"), vocab_path=Path("save/vocabulary.json"))
+        self.model = self.load_model(model_path=MODEL_PATH, vocab_path=VOCABULARY_PATH)
 
 
     def generate(self, prompt: str, max_length: int = 50) -> str:

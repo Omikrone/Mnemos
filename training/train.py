@@ -83,7 +83,7 @@ class Trainer:
                     sys.stdout.write(f"\r[{i}/{total_batches}] {percent:.1f}% - Loss: {loss:.4f}")
                     sys.stdout.flush()
         self.save_model()
-        print("Model saved successfully.")
+        print("\nModel saved successfully.")
 
 
     def save_model(self):
