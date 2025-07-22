@@ -13,9 +13,9 @@ BATCH_SIZE = 8                  # Number of sequences in a batch
 LEARNING_RATE = 1e-3            # Learning rate for the optimizer
 NB_EPOCHS = 1                   # Number of epochs for training
 
-# Model parameters
+## Model parameters
 EMBEDDING_DIM = 64              # Dimension of the embedding vectors
 HIDDEN_DIM = 128                # Dimension of the hidden layers
 
-# Layer parameters
+## Layer parameters
 EPS = 1e-5                      # Small value to avoid division by zero in layer normalization

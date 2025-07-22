@@ -9,8 +9,8 @@ from training.batch import BatchBuilder
 from training.cross_entropy import CrossEntropyLoss
 from training.preprocesser import PreProcesser
 from training.tokenizer.bpe import BPETokenizer
-from paths import TRAINING_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
-from params import LEARNING_RATE, NB_EPOCHS
+from config.paths import TRAINING_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
+from config.params import LEARNING_RATE, NB_EPOCHS
 
 
 class Trainer:
@@ -34,7 +34,6 @@ class Trainer:
         self.model = TransformerModel(vocab_size)
         self.lr = LEARNING_RATE
         self.loss_fn = CrossEntropyLoss()
-
 
     def train_step(self, input_ids: np.ndarray, targets: np.ndarray) -> float:
         """ Perform a single training step and return the loss. """

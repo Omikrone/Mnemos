@@ -3,7 +3,7 @@ from multiprocessing import Pool, cpu_count
 import time
 
 from training.tokenizer.vocabulary import VocabularyManager
-from paths import MERGES_PATH, VOCABULARY_PATH
+from config.paths import MERGES_PATH, VOCABULARY_PATH
 
 
 global_table = None

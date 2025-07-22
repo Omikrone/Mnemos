@@ -5,3 +5,4 @@ test.txt
 *.pkl
 *.json
 save/
+data/

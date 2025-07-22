@@ -2,7 +2,7 @@ import numpy as np
 
 from model.gradient import Param
 from model.save_model import LayerNormParams
-from params import EPS
+from config.params import EPS
 
 
 class LayerNorm:

@@ -1,8 +1,8 @@
 from collections import defaultdict
 
 from training.tokenizer.vocabulary import VocabularyManager
-from paths import MERGES_PATH, VOCABULARY_PATH
-from params import NB_MAX_TOKENS
+from config.paths import MERGES_PATH, VOCABULARY_PATH
+from config.params import NB_MAX_TOKENS
 
 
 class BPETokenizer:

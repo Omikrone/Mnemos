@@ -1,7 +1,7 @@
 import numpy as np
 
 from model.gradient import Param
-from params import EMBEDDING_DIM, MAX_SEQUENCE_LENGTH
+from config.params import EMBEDDING_DIM, MAX_SEQUENCE_LENGTH
 
 
 class TokenEmbedding:

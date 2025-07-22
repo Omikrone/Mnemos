@@ -1,4 +1,4 @@
-from ui import UserInterface
+from ui.menu import UserInterface
 
 
 if __name__ == "__main__":

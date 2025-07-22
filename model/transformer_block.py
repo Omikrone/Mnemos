@@ -5,7 +5,7 @@ from model.layer_norm import LayerNorm
 from model.mlp import MLP
 from model.attention import Attention
 from model.save_model import TransformerBlockParams
-from params import EMBEDDING_DIM, HIDDEN_DIM
+from config.params import EMBEDDING_DIM, HIDDEN_DIM
 
 
 class TransformerBlock:

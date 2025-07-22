@@ -1,8 +1,8 @@
 import numpy as np
 
 from training.tokenizer.bpe import BPETokenizer
-from paths import *
-from params import CHUNK_SIZE, BATCH_SIZE
+from config.paths import *
+from config.params import CHUNK_SIZE, BATCH_SIZE
 
 
 class BatchBuilder:

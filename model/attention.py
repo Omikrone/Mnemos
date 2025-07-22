@@ -2,7 +2,7 @@ import numpy as np
 
 from model.gradient import Param
 from model.save_model import AttentionParams
-from params import EMBEDDING_DIM
+from config.params import EMBEDDING_DIM
 
 
 class Attention:

@@ -2,7 +2,7 @@ import numpy as np
 
 from model.gradient import Param
 from model.save_model import MLPParams
-from params import EMBEDDING_DIM, HIDDEN_DIM
+from config.params import EMBEDDING_DIM, HIDDEN_DIM
 
 
 class MLP:
