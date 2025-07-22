@@ -4,10 +4,11 @@ import numpy as np
 import json
 
 from model.transformer_model import TransformerModel
+from training.tokenizer.parallel_encoding import tokenize_text
 from training.batch import BatchBuilder
 from training.cross_entropy import CrossEntropyLoss
 from training.preprocesser import PreProcesser
-from training.tokenizer import BPETokenizer
+from training.tokenizer.bpe import BPETokenizer
 from paths import TRAINING_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
 from params import LEARNING_RATE, NB_EPOCHS
 
@@ -63,7 +64,8 @@ class Trainer:
 
         # Perform the chunking and create batches from the training data
         batch_builder = BatchBuilder(self.tokenizer.text, self.tokenizer)
-        chunks = batch_builder.create_chunks()
+        all_tokens = tokenize_text(self.tokenizer.text)
+        chunks = batch_builder.create_chunks(all_tokens)
         batches = batch_builder.create_batches(chunks)
         total_batches = len(batches)
 

@@ -7,7 +7,7 @@ from model.transformer_model import TransformerModel
 from training.batch import BatchBuilder
 from training.preprocesser import PreProcesser
 from training.cross_entropy import CrossEntropyLoss
-from training.tokenizer import BPETokenizer
+from training.tokenizer.bpe import BPETokenizer
 from paths import TEST_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
 
 

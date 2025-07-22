@@ -28,7 +28,7 @@ class PreProcesser:
         last_printed_percent = -1  # Pour éviter les doublons
 
         with open(data_file_path, "r", encoding="utf-8") as file:
-            for line in file:
+            for line in file.readlines():
 
                 # Nettoyage et normalisation de la ligne
                 cleaned_line = self._clean_text(line)
@@ -48,7 +48,7 @@ class PreProcesser:
                     last_printed_percent = percent
 
         print("\nPreprocessing finished.")
-        return "".join(cleaned_lines)
+        return "\n".join(cleaned_lines)
     
 
     def _clean_text(self, text: str) -> str:
@@ -64,7 +64,6 @@ class PreProcesser:
     def _normalize_whitespace(self, text: str) -> str:
         """ Normalize whitespace in the text. """
         
-        text = re.sub(r"\s+", " ", text)       # Delete extra spaces
-        text = re.sub(r"\s*\n\s*", "\n", text)  # Delete newlines with spaces around
-        text = text.strip()
-        return text
+        text = re.sub(r"[ \t]+", " ", text)
+        text = re.sub(r" *\n *", "\n", text)
+        return text.strip()

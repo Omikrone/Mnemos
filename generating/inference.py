@@ -3,7 +3,8 @@ import numpy as np
 import pickle
 from pathlib import Path
 
-from training.tokenizer import BPETokenizer, encode
+from training.tokenizer.parallel_encoding import encode
+from training.tokenizer.bpe import BPETokenizer
 from model.transformer_model import TransformerModel
 from paths import MODEL_PATH, VOCABULARY_PATH
 from params import MAX_SEQUENCE_LENGTH
