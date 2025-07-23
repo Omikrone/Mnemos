@@ -16,6 +16,7 @@ NB_EPOCHS = 1                   # Number of epochs for training
 ## Model parameters
 EMBEDDING_DIM = 64              # Dimension of the embedding vectors
 HIDDEN_DIM = 128                # Dimension of the hidden layers
+NB_ATTENTION_HEADS = 2          # Number of self-attention heads
 
 ## Layer parameters
 EPS = 1e-5                      # Small value to avoid division by zero in layer normalization

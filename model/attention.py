@@ -1,12 +1,12 @@
 import numpy as np
 
 from model.gradient import Param
-from model.save_model import AttentionParams
-from config.params import EMBEDDING_DIM
+from model.save_model import AttentionParams, MultiHeadAttentionParams
+from config.params import EMBEDDING_DIM, NB_ATTENTION_HEADS
 
 
-class Attention:
-    """ Attention class for implementing the attention mechanism in the Transformer model. """
+class SelfAttention:
+    """ SelfAttention class for implementing the attention mechanism in the Transformer model. """
 
     input_embeddings : np.ndarray
     query_matrix : Param
@@ -120,4 +120,75 @@ class Attention:
             query_matrix=self.query_matrix.value,
             key_matrix=self.key_matrix.value,
             value_matrix=self.value_matrix.value
+        )
+    
+
+class MultiHeadAttention:
+
+    attention_heads : list[SelfAttention]
+    concat : np.ndarray
+    inputs : np.ndarray
+    w_out : Param
+    b_out : Param
+
+    def __init__(self):
+        
+        self.attention_heads = [SelfAttention() for _ in range(NB_ATTENTION_HEADS)]
+
+        self.w_out = Param(np.random.randn(NB_ATTENTION_HEADS * EMBEDDING_DIM, EMBEDDING_DIM) * 0.01)
+        self.b_out = Param(np.zeros(EMBEDDING_DIM))
+
+    
+    @classmethod
+    def from_params(cls, params: MultiHeadAttentionParams) -> 'MultiHeadAttention':
+        """ Create an Attention instance from saved parameters. """
+
+        instance = cls()
+        instance.attention_heads = [SelfAttention.from_params(param) for param in params.attention_heads]
+        instance.b_out.value = params.b_out
+        instance.w_out.value = params.w_out
+        return instance
+    
+
+    def forward(self, inputs):
+        heads_out = [head.add_attention(inputs) for head in self.attention_heads]
+        self.concat = np.concatenate(heads_out, axis=-1)
+        self.inputs = inputs
+        output = self.concat @ self.w_out.value + self.b_out.value
+        return output
+    
+
+    def backward(self, grad_out : np.ndarray):
+
+        B, T, D_concat = self.concat.shape
+        _, _, D_out = grad_out.shape
+        self.w_out.gradient += self.concat.reshape(B*T, D_concat).T @ grad_out.reshape(B*T, D_out)
+        self.b_out.gradient += grad_out.sum(axis=(0,1))
+
+        grad_concat = grad_out @ self.w_out.value.T
+        split_grads = np.split(grad_concat, NB_ATTENTION_HEADS, axis=-1)
+        grad_x_heads = [h.backward(g) for h, g in zip(self.attention_heads, split_grads)]
+        grad_x = sum(grad_x_heads)
+        return grad_x
+    
+
+    def step(self, lr : int):
+        for head in self.attention_heads:
+            head.step(lr)
+        self.w_out.step(lr)
+        self.b_out.step(lr)
+
+
+    def zero_grad(self):
+        for head in self.attention_heads:
+            head.zero_grad()
+        self.w_out.zero_grad()
+        self.b_out.zero_grad()
+
+    
+    def get_params(self) -> MultiHeadAttentionParams:
+        return MultiHeadAttentionParams(
+            w_out=self.w_out.value,
+            b_out=self.b_out.value,
+            attention_heads=[head.get_parameters() for head in self.attention_heads]
         )

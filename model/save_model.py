@@ -12,6 +12,15 @@ class AttentionParams:
 
 
 @dataclass
+class MultiHeadAttentionParams:
+    """ Parameters for teh multi head attention mechanism """
+
+    w_out : np.ndarray
+    b_out : np.ndarray
+    attention_heads : list[AttentionParams]
+
+
+@dataclass
 class MLPParams:
     """ Parameters for the Multi-Layer Perceptron (MLP). """
 

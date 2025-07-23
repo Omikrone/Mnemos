@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 from pathlib import Path
 
-from training.tokenizer.parallel_encoding import encode
+from training.tokenizer.parallel_encoding import encode, tokenize_text
 from training.tokenizer.bpe import BPETokenizer
 from model.transformer_model import TransformerModel
 from config.paths import MODEL_PATH, VOCABULARY_PATH
@@ -29,7 +29,9 @@ class Inference:
         """ Generate text based on the input prompt. """
         
         self.tokenizer = BPETokenizer(prompt)
-        tokens = np.array([encode(prompt)])  # (1, seq_len)
+        tokens = np.array([tokenize_text(prompt)]) # (1, seq_len)
+        B, T, D = tokens.shape
+        tokens = tokens.reshape(B*T, D)
 
         for _ in range(max_length):
             if tokens.shape[1] >= MAX_SEQUENCE_LENGTH:

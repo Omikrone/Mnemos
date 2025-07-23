@@ -3,7 +3,7 @@ import numpy as np
 from model.gradient import Param
 from model.layer_norm import LayerNorm
 from model.mlp import MLP
-from model.attention import Attention
+from model.attention import MultiHeadAttention
 from model.save_model import TransformerBlockParams
 from config.params import EMBEDDING_DIM, HIDDEN_DIM
 
@@ -15,7 +15,7 @@ class TransformerBlock:
     ln1 : LayerNorm
     w_out : Param
     b_out : Param
-    self_attention : Attention
+    self_attention : MultiHeadAttention
     ln2 : LayerNorm
     mlp : MLP
 
@@ -26,7 +26,7 @@ class TransformerBlock:
         self.ln1 = LayerNorm(EMBEDDING_DIM)
         self.w_out = Param(np.random.randn(EMBEDDING_DIM, vocab_size) * 0.02)
         self.b_out = Param(np.zeros((vocab_size,)))
-        self.self_attention = Attention()
+        self.self_attention = MultiHeadAttention()
         self.ln2 = LayerNorm(EMBEDDING_DIM)
         self.mlp = MLP()
 
@@ -39,7 +39,7 @@ class TransformerBlock:
         instance.ln1 = LayerNorm.from_params(params.ln1)
         instance.w_out = Param(params.w_out)
         instance.b_out = Param(params.b_out)
-        instance.self_attention = Attention.from_params(params.self_attention)
+        instance.self_attention = MultiHeadAttention.from_params(params.self_attention)
         instance.ln2 = LayerNorm.from_params(params.ln2)
         instance.mlp = MLP.from_params(params.mlp)
         return instance
@@ -50,7 +50,7 @@ class TransformerBlock:
 
         # Layer normalization and residual connection for the self-attention sub-layer
         norm_x = self.ln1.forward(inputs)
-        attn_out = self.self_attention.add_attention(norm_x)
+        attn_out = self.self_attention.forward(norm_x)
         x = inputs + attn_out
 
         # Layer normalization and residual connection for the MLP sub-layer
@@ -116,7 +116,7 @@ class TransformerBlock:
             ln1=self.ln1.get_params(),
             w_out=self.w_out.value,
             b_out=self.b_out.value,
-            self_attention=self.self_attention.get_parameters(),
+            self_attention=self.self_attention.get_params(),
             ln2=self.ln2.get_params(),
             mlp=self.mlp.get_parameters()
         )

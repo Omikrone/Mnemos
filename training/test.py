@@ -9,6 +9,7 @@ from training.preprocesser import PreProcesser
 from training.cross_entropy import CrossEntropyLoss
 from training.tokenizer.bpe import BPETokenizer
 from config.paths import TEST_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
+from training.tokenizer.parallel_encoding import tokenize_text
 
 
 
@@ -58,7 +59,8 @@ class Tester:
 
         # Perform the chunking and create batches from the test data
         batch_builder = BatchBuilder(self.tokenizer.text, self.tokenizer)
-        chunks = batch_builder.create_chunks()
+        all_tokens = tokenize_text(self.tokenizer.text)
+        chunks = batch_builder.create_chunks(all_tokens)
         batches = batch_builder.create_batches(chunks)
         global_loss = 0.0
 
