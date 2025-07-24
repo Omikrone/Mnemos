@@ -42,7 +42,6 @@ class SelfAttention:
     def add_attention(self, input_embeddings) -> np.ndarray:
         """ Add attention weights to the inputs """
 
-        # Matrix product to get Query, Key and Value matrices
         self.input_embeddings = input_embeddings
         self.query = input_embeddings @ self.query_matrix.value
         self.key = input_embeddings @ self.key_matrix.value
@@ -50,12 +49,17 @@ class SelfAttention:
 
         scores = self.query @ self.key.transpose(0, 2, 1) / np.sqrt(EMBEDDING_DIM)
 
-        # Softmax to get attention weights
-        exp_scores = np.exp(scores - np.max(scores, axis=-1, keepdims=True))  # stab numérique
+        # === Masque causale ===
+        seq_len = input_embeddings.shape[1]
+        mask = np.tril(np.ones((seq_len, seq_len), dtype=bool))[None, :, :]
+        scores = np.where(mask, scores, -1e9)
+
+        # Softmax stable
+        exp_scores = np.exp(scores - np.max(scores, axis=-1, keepdims=True))
         attention_weights = exp_scores / np.sum(exp_scores, axis=-1, keepdims=True)
         self.attention_weights = attention_weights
 
-        # Apply attention weights to the values
+        # Attention finale
         self.output = self.attention_weights @ self.value
         return self.output
     
