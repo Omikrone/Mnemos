@@ -94,11 +94,9 @@ class BPETokenizer:
         """ Convert a numeric vector to a text. """
 
         table = self.table_manager.load_table()
+        reverse_table = {v: k for k, v in table.items()}
         text = ""
-
         for nb in vector:
-            for key, value in table.items():
-                if value == nb:
-                    text += key
-        
+            if nb in reverse_table:
+                text += reverse_table[nb]
         return text
