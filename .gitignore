@@ -6,3 +6,5 @@ test.txt
 *.json
 save/
 data/
+csv/
+logs/

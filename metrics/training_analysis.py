@@ -1,4 +1,5 @@
 from matplotlib import pyplot as plt
+import csv
 
 
 def plot_training_loss(log_file):
@@ -9,12 +10,13 @@ def plot_training_loss(log_file):
     losses = []
 
     with open(log_file, 'r') as f:
-        next(f)  # Skip header
-        for line in f:
-            epoch, batch, loss = line.strip().split(',')
-            epochs.append(int(epoch))
-            batches.append(int(batch))
-            losses.append(float(loss))
+        reader = csv.reader(f)
+        next(reader)  # Skip header
+        for row in reader:
+            epoch, batch, loss = map(float, row)
+            epochs.append(epoch)
+            batches.append(batch)
+            losses.append(loss)
 
     plt.figure(figsize=(10, 5))
     plt.plot(batches, losses, label='Training Loss', color='blue')
@@ -27,5 +29,5 @@ def plot_training_loss(log_file):
 
 
 if __name__ == "__main__":
-    log_file_path = 'training_log.csv'
+    log_file_path = "training_log.csv"
     plot_training_loss(log_file_path)

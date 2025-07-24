@@ -16,3 +16,7 @@ TRAINING_DATA_PATH = TRAINING_DATA_DIR / "train.txt"
 
 TEST_DATA_DIR = DATA_DIR / "testing"
 TEST_DATA_PATH = TEST_DATA_DIR / "test.txt"
+
+
+LOGS_DIR = ROOT_DIR / "logs"
+TRAINING_LOG_PATH = LOGS_DIR / "training_log.csv"

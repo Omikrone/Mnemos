@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 from pathlib import Path
 
-from training.tokenizer.parallel_encoding import encode, tokenize_text
+from training.tokenizer.parallel_encoding import tokenize_text
 from training.tokenizer.bpe import BPETokenizer
 from model.transformer_model import TransformerModel
 from config.paths import MODEL_PATH, VOCABULARY_PATH
@@ -42,7 +42,6 @@ class Inference:
             tokens = np.concatenate((tokens, generated_token_id), axis=1)
         
         char = self.tokenizer.decode(tokens[0])
-        print(f"Generated text: {tokens[0]}")
         return char
 
 

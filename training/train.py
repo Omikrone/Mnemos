@@ -4,6 +4,7 @@ import numpy as np
 import json
 import csv
 
+from metrics.training_logger import TrainingLogger
 from model.transformer_model import TransformerModel
 from training.tokenizer.parallel_encoding import tokenize_text
 from training.batch import BatchBuilder
@@ -21,6 +22,7 @@ class Trainer:
     model : TransformerModel
     loss_fn : CrossEntropyLoss
     lr : int
+    logger : TrainingLogger
 
 
     def __init__(self):
@@ -35,6 +37,8 @@ class Trainer:
         self.model = TransformerModel(vocab_size)
         self.lr = LEARNING_RATE
         self.loss_fn = CrossEntropyLoss()
+        self.logger = TrainingLogger()
+
 
     def train_step(self, input_ids: np.ndarray, targets: np.ndarray) -> float:
         """ Perform a single training step and return the loss. """
@@ -72,11 +76,6 @@ class Trainer:
         print(f"Number of batches to train: {total_batches}")
 
         # Training loop with multiple epochs
-        header = ['epoch', 'batch', 'loss']
-        with open('training_log.csv', 'w', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow(header)
-
         for epoch in range(1, NB_EPOCHS + 1):
             print(f"Epoch {epoch}/{NB_EPOCHS}")
             np.random.shuffle(batches)
@@ -89,9 +88,7 @@ class Trainer:
                     percent = (i / total_batches) * 100
                     sys.stdout.write(f"\r[{i}/{total_batches}] {percent:.1f}% - Loss: {loss:.4f}")
                     sys.stdout.flush()
-                    with open('training_log.csv', 'a', newline='') as f:
-                        writer = csv.writer(f)
-                        writer.writerow([epoch, i, loss])
+                    self.logger.log(epoch, i, loss, np.exp(loss))
         self.save_model()
         print("\nModel saved successfully.")
 

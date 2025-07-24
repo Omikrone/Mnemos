@@ -67,8 +67,8 @@ class TransformerModel:
 
         logits = self.forward(input_ids)
         last_logits = logits[0, -1]
-        #prediction = self.sample_top_k(last_logits, k=10)
-        prediction = np.argmax(last_logits)
+        prediction = self.sample_top_k(last_logits, k=10)
+        #prediction = np.argmax(last_logits)
         return prediction
     
 

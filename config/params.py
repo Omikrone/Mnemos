@@ -14,7 +14,7 @@ LEARNING_RATE = 1e-3            # Learning rate for the optimizer
 NB_EPOCHS = 1                   # Number of epochs for training
 
 ## Model parameters
-EMBEDDING_DIM = 128              # Dimension of the embedding vectors
+EMBEDDING_DIM = 128             # Dimension of the embedding vectors
 HIDDEN_DIM = 256                # Dimension of the hidden layers
 NB_ATTENTION_HEADS = 2          # Number of self-attention heads
 
