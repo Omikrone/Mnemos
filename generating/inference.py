@@ -42,6 +42,7 @@ class Inference:
             tokens = np.concatenate((tokens, generated_token_id), axis=1)
         
         char = self.tokenizer.decode(tokens[0])
+        print(f"Generated text: {tokens[0]}")
         return char
 
 

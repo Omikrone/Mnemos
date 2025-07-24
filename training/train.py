@@ -2,6 +2,7 @@ import pickle
 import sys
 import numpy as np
 import json
+import csv
 
 from model.transformer_model import TransformerModel
 from training.tokenizer.parallel_encoding import tokenize_text
@@ -71,6 +72,11 @@ class Trainer:
         print(f"Number of batches to train: {total_batches}")
 
         # Training loop with multiple epochs
+        header = ['epoch', 'batch', 'loss']
+        with open('training_log.csv', 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(header)
+
         for epoch in range(1, NB_EPOCHS + 1):
             print(f"Epoch {epoch}/{NB_EPOCHS}")
             np.random.shuffle(batches)
@@ -83,6 +89,9 @@ class Trainer:
                     percent = (i / total_batches) * 100
                     sys.stdout.write(f"\r[{i}/{total_batches}] {percent:.1f}% - Loss: {loss:.4f}")
                     sys.stdout.flush()
+                    with open('training_log.csv', 'a', newline='') as f:
+                        writer = csv.writer(f)
+                        writer.writerow([epoch, i, loss])
         self.save_model()
         print("\nModel saved successfully.")
 
