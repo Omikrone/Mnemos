@@ -5,7 +5,7 @@
 **Mnemos** (comes from the [Greek deity of memory](https://en.wikipedia.org/wiki/Mnemosyne)) is a mini-LLM based on Transformers, designed for training and testing purposes. It is built to be lightweight and efficient, making it suitable for educational and experimental use.
 This pedagogical project is built from scratch, so all the different components are available in this repository, and you don't need to install much additional dependencies.
 
-- **Current Version**: 0.2.1 (POC)
+- **Current Version**: 0.2.0 (POC)
 
 ## Features
 
