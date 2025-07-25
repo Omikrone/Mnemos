@@ -1,5 +1,5 @@
 import csv
-from pyparsing import Path
+from pathlib import Path
 
 from config.paths import TRAINING_LOG_PATH
 

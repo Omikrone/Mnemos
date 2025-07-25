@@ -38,20 +38,26 @@ class TokenEmbedding:
         return self.matrix.value[input_batches]
     
     
-    def backward(self, d_output: np.ndarray):
-        """ Compute the gradients of the embedding matrix for backpropagation. """
-
-        # Initialize gradient if not done
+    def backward(self, d_output: np.ndarray) -> np.ndarray:
+        """
+        d_output: gradient de shape (batch_size, seq_len, embedding_dim)
+        """
+        # Initialisation du gradient s'il n'existe pas
         if self.matrix.gradient is None:
             self.matrix.gradient = np.zeros_like(self.matrix.value)
 
-        # For each position in the batch, accumulate the gradient on the correct row of the matrix
-        batch_size, seq_len = self.input_batches.shape
-        for i in range(batch_size):
-            for j in range(seq_len):
-                token_id = self.input_batches[i, j]
-                self.matrix.gradient[token_id] += d_output[i, j]
-        return self.matrix.gradient
+        # Accumulation vectorisée des gradients pour chaque token
+        # self.input_batches shape = (batch_size, seq_len)
+        # d_output shape = (batch_size, seq_len, embedding_dim)
+        np.add.at(
+            self.matrix.gradient,                   # accumulation dans la matrice
+            self.input_batches,                     # indices (batch_size, seq_len)
+            d_output                                # gradients correspondants
+        )
+
+        # Pour les IDs, on ne peut pas propager un vrai gradient en amont,
+        # on renvoie un tensor de zéros de même shape que d_output.
+        return np.zeros_like(d_output)
 
 
     def zero_grad(self):
@@ -95,16 +101,26 @@ class PositionEmbedding:
         return np.broadcast_to(positions, (batch_size, seq_len, EMBEDDING_DIM))
 
 
-    def backward(self, d_output: np.ndarray):
-        """ Compute the gradients of the position embedding matrix for backpropagation. """
-
+    def backward(self, d_output: np.ndarray) -> np.ndarray:
+        """
+        d_output: gradient remontant depuis la suite du réseau,
+                de shape (batch_size, seq_len, embedding_dim)
+        """
+        # Initialisation du gradient si besoin
         if self.matrix.gradient is None:
             self.matrix.gradient = np.zeros_like(self.matrix.value)
 
-        grad_sum = np.sum(d_output, axis=0) 
+        # Somme des gradients sur le batch pour chaque position
+        # grad_sum[i] = somme_{batch, dim} d_output[batch, i, :]
+        grad_sum = np.sum(d_output, axis=0)  # shape = (seq_len, embedding_dim)
 
+        # On ajoute ce gradient aux lignes correspondantes de la matrice de pos.
+        # Attention à n'accumuler QUE sur la longueur seq_len actuelle.
         self.matrix.gradient[:self.seq_len] += grad_sum
-        return self.matrix.gradient
+
+        # On renvoie le gradient en amont pour les embeddings de tokens
+        # (ici, c'est exactement d_output, pas besoin de le modifier)
+        return d_output
     
 
     def zero_grad(self):

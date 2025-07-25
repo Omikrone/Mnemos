@@ -13,7 +13,7 @@ def plot_training_loss(log_file):
         reader = csv.reader(f)
         next(reader)  # Skip header
         for row in reader:
-            epoch, batch, loss = map(float, row)
+            epoch, batch, loss, _ = map(float, row)
             epochs.append(epoch)
             batches.append(batch)
             losses.append(loss)
@@ -29,5 +29,5 @@ def plot_training_loss(log_file):
 
 
 if __name__ == "__main__":
-    log_file_path = "training_log.csv"
+    log_file_path = "logs/training_log.csv"
     plot_training_loss(log_file_path)

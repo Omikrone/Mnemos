@@ -6,6 +6,7 @@ import csv
 
 from metrics.training_logger import TrainingLogger
 from model.transformer_model import TransformerModel
+from training.test import Tester
 from training.tokenizer.parallel_encoding import tokenize_text
 from training.batch import BatchBuilder
 from training.cross_entropy import CrossEntropyLoss
@@ -35,6 +36,7 @@ class Trainer:
         vocab_size = self.tokenizer.get_vocabulary_size()
 
         self.model = TransformerModel(vocab_size)
+        #self.model = Tester.load_model(MODEL_PATH)
         self.lr = LEARNING_RATE
         self.loss_fn = CrossEntropyLoss()
         self.logger = TrainingLogger()
@@ -89,7 +91,8 @@ class Trainer:
                     sys.stdout.write(f"\r[{i}/{total_batches}] {percent:.1f}% - Loss: {loss:.4f}")
                     sys.stdout.flush()
                     self.logger.log(epoch, i, loss, np.exp(loss))
-        self.save_model()
+                    self.save_model()
+        
         print("\nModel saved successfully.")
 
 

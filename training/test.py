@@ -35,7 +35,8 @@ class Tester:
         self.loss_fn = CrossEntropyLoss()
     
 
-    def load_model(self, model_path: Path) -> TransformerModel:
+    @staticmethod
+    def load_model(model_path: Path) -> TransformerModel:
         """ Load a saved model from a file. """
 
         with open(model_path, "rb") as f:

@@ -23,9 +23,9 @@ class SelfAttention:
         """ Initialize the attention matrices with random values. """
 
         # Random initialization of attention matrices
-        self.query_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM))
-        self.key_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM))
-        self.value_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM))
+        self.query_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * 0.01)
+        self.key_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * 0.01)
+        self.value_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * 0.01)
 
 
     @classmethod
@@ -39,29 +39,38 @@ class SelfAttention:
         return instance
 
 
-    def add_attention(self, input_embeddings) -> np.ndarray:
-        """ Add attention weights to the inputs """
+    def add_attention(self, input_embeddings: np.ndarray) -> np.ndarray:
+        """ Add causal multi-head attention weights to the inputs """
 
-        self.input_embeddings = input_embeddings
-        self.query = input_embeddings @ self.query_matrix.value
-        self.key = input_embeddings @ self.key_matrix.value
-        self.value = input_embeddings @ self.value_matrix.value
+        self.input_embeddings = input_embeddings  # (B, T, D)
+        
+        # Projections
+        self.query = input_embeddings @ self.query_matrix.value  # (B, T, D)
+        self.key   = input_embeddings @ self.key_matrix.value    # (B, T, D)
+        self.value = input_embeddings @ self.value_matrix.value  # (B, T, D)
 
-        scores = self.query @ self.key.transpose(0, 2, 1) / np.sqrt(EMBEDDING_DIM)
+        # Compute attention scores
+        d_k = input_embeddings.shape[-1]
+        scores = self.query @ self.key.transpose(0, 2, 1) / np.sqrt(d_k)  # (B, T, T)
 
-        # === Masque causale ===
+        # === Masque causal ===
         seq_len = input_embeddings.shape[1]
-        mask = np.tril(np.ones((seq_len, seq_len), dtype=bool))[None, :, :]
-        scores = np.where(mask, scores, -1e9)
+        mask = np.tril(np.ones((seq_len, seq_len), dtype=bool))[None, :, :]  # (1, T, T)
+        
+        # Masquage propre : évite -1e9 fixe
+        scores = np.where(mask, scores, -np.inf)
 
-        # Softmax stable
-        exp_scores = np.exp(scores - np.max(scores, axis=-1, keepdims=True))
-        attention_weights = exp_scores / np.sum(exp_scores, axis=-1, keepdims=True)
-        self.attention_weights = attention_weights
+        # === Softmax stable ===
+        max_scores = np.max(scores, axis=-1, keepdims=True)  # (B, T, 1)
+        scores = scores - max_scores                         # shift pour stabilité
+        exp_scores = np.exp(scores) * mask                   # annule aussi les zones masquées
+        sum_exp = np.sum(exp_scores, axis=-1, keepdims=True) + 1e-9  # évite division par 0
+        self.attention_weights = exp_scores / sum_exp        # (B, T, T)
 
-        # Attention finale
-        self.output = self.attention_weights @ self.value
+        # === Produit final avec V ===
+        self.output = self.attention_weights @ self.value     # (B, T, D)
         return self.output
+
     
 
     def backward(self, d_output) -> np.ndarray:

@@ -44,8 +44,6 @@ class TransformerBlockParams:
     """ Parameters for a Transformer block. """
 
     ln1: LayerNormParams
-    w_out: np.ndarray
-    b_out: np.ndarray
     self_attention: AttentionParams
     ln2: LayerNormParams
     mlp: MLPParams
@@ -57,4 +55,6 @@ class ModelParams:
 
     embedding_matrix: np.ndarray
     position_matrix: np.ndarray
-    transformer_block_params: TransformerBlockParams
+    transformer_block_params: list[TransformerBlockParams]
+    w_out: np.ndarray
+    b_out: np.ndarray

@@ -25,7 +25,7 @@ class Inference:
         self.model = self.load_model(model_path=MODEL_PATH, vocab_path=VOCABULARY_PATH)
 
 
-    def generate(self, prompt: str, max_length: int = 50) -> str:
+    def generate(self, prompt: str, max_length: int = 200) -> str:
         """ Generate text based on the input prompt. """
         
         self.tokenizer = BPETokenizer(prompt)
