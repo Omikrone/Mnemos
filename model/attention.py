@@ -43,32 +43,33 @@ class SelfAttention:
         """ Add causal multi-head attention weights to the inputs """
 
         self.input_embeddings = input_embeddings  # (B, T, D)
-        
+
         # Projections
         self.query = input_embeddings @ self.query_matrix.value  # (B, T, D)
         self.key   = input_embeddings @ self.key_matrix.value    # (B, T, D)
         self.value = input_embeddings @ self.value_matrix.value  # (B, T, D)
 
-        # Compute attention scores
+        # Attention scores
         d_k = input_embeddings.shape[-1]
         scores = self.query @ self.key.transpose(0, 2, 1) / np.sqrt(d_k)  # (B, T, T)
-
-        # === Masque causal ===
-        seq_len = input_embeddings.shape[1]
-        mask = np.tril(np.ones((seq_len, seq_len), dtype=bool))[None, :, :]  # (1, T, T)
         
-        # Masquage propre : évite -1e9 fixe
-        scores = np.where(mask, scores, -np.inf)
+        # Clip pour éviter overflow
+        scores = np.clip(scores, -1e4, 1e4)
 
-        # === Softmax stable ===
-        max_scores = np.max(scores, axis=-1, keepdims=True)  # (B, T, 1)
-        scores = scores - max_scores                         # shift pour stabilité
-        exp_scores = np.exp(scores) * mask                   # annule aussi les zones masquées
-        sum_exp = np.sum(exp_scores, axis=-1, keepdims=True) + 1e-9  # évite division par 0
-        self.attention_weights = exp_scores / sum_exp        # (B, T, T)
+        # Masque causal
+        seq_len = input_embeddings.shape[1]
+        mask = np.tril(np.ones((seq_len, seq_len), dtype=np.float32))[None, :, :]  # (1, T, T)
+        scores = np.where(mask == 1, scores, -1e9)  # évite -inf direct
 
-        # === Produit final avec V ===
-        self.output = self.attention_weights @ self.value     # (B, T, D)
+        # Softmax stable
+        max_scores = np.max(scores, axis=-1, keepdims=True)     # (B, T, 1)
+        scores = scores - max_scores                            # stabilité
+        exp_scores = np.exp(scores) * mask                      # annule les zones masquées
+        sum_exp = np.sum(exp_scores, axis=-1, keepdims=True) + 1e-9  # évite /0
+        self.attention_weights = exp_scores / sum_exp           # (B, T, T)
+
+        # Output
+        self.output = self.attention_weights @ self.value       # (B, T, D)
         return self.output
 
     

@@ -12,7 +12,7 @@ MERGES_PATH = SAVED_MODEL_DIR / "merges.pkl"
 DATA_DIR = ROOT_DIR / 'data'
 
 TRAINING_DATA_DIR = DATA_DIR / "training"
-TRAINING_DATA_PATH = TRAINING_DATA_DIR / "train.txt"
+TRAINING_DATA_PATH = TRAINING_DATA_DIR / "medium_train.txt"
 
 TEST_DATA_DIR = DATA_DIR / "testing"
 TEST_DATA_PATH = TEST_DATA_DIR / "test.txt"
