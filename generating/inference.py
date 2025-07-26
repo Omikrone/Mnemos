@@ -25,7 +25,7 @@ class Inference:
         self.model = self.load_model(model_path=MODEL_PATH, vocab_path=VOCABULARY_PATH)
 
 
-    def generate(self, prompt: str, max_length: int = 200) -> str:
+    def generate(self, prompt: str, max_length: int = 300) -> str:
         """ Generate text based on the input prompt. """
         
         self.tokenizer = BPETokenizer(prompt)
@@ -34,15 +34,36 @@ class Inference:
         tokens = tokens.reshape(B*T, D)
 
         for _ in range(max_length):
-            if tokens.shape[1] >= MAX_SEQUENCE_LENGTH:
+            print(f"Current length: {tokens.shape[1]}")
+            if tokens.shape[1] >= max_length:
                 break
-            generated_token_id = self.model.predict_next_token(tokens)  # attend (batch, seq_len)
+
+            context = tokens[:, -MAX_SEQUENCE_LENGTH:]  if tokens.shape[1] > MAX_SEQUENCE_LENGTH else tokens
+            generated_token_id = self.predict_next_token(context)  # attend (batch, seq_len)
             generated_token_id = np.array([[generated_token_id]])
             
             tokens = np.concatenate((tokens, generated_token_id), axis=1)
         
         char = self.tokenizer.decode(tokens[0])
         return char
+
+
+    def predict_next_token(self, input_ids: np.ndarray) -> int:
+        """ Predict the next token given the input IDs. """
+
+        logits = self.model.forward(input_ids)
+        last_logits = logits[0, -1]
+        prediction = self.sample_top_k(last_logits, k=10)
+        return prediction
+    
+
+    def sample_top_k(self, logits, k=10) -> int:
+        """ Sample from the top k logits using softmax. """
+
+        top_k_indices = np.argpartition(logits, -k)[-k:]
+        top_k_logits = logits[top_k_indices]
+        probs = np.exp(top_k_logits) / np.sum(np.exp(top_k_logits))
+        return np.random.choice(top_k_indices, p=probs)
 
 
     def load_model(self, model_path: Path, vocab_path: Path) -> TransformerModel:

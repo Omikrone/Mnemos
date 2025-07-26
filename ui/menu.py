@@ -55,5 +55,5 @@ class UserInterface:
 
         self.inference = Inference()
         prompt = input("Enter a prompt: ")
-        generated_text = self.inference.generate(prompt, max_length=100)
+        generated_text = self.inference.generate(prompt, max_length=300)
         print(f"Generated text: {generated_text}")

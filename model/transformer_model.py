@@ -75,25 +75,6 @@ class TransformerModel:
         grad_embedding = self.embedding.backward(loss_gradient)
         grad_position = self.position.backward(loss_gradient)
         return grad_position + grad_embedding
-
-
-    def sample_top_k(self, logits, k=10) -> int:
-        """ Sample from the top k logits using softmax. """
-
-        top_k_indices = np.argpartition(logits, -k)[-k:]
-        top_k_logits = logits[top_k_indices]
-        probs = np.exp(top_k_logits) / np.sum(np.exp(top_k_logits))
-        return np.random.choice(top_k_indices, p=probs)
-
-
-    def predict_next_token(self, input_ids: np.ndarray) -> int:
-        """ Predict the next token given the input IDs. """
-
-        logits = self.forward(input_ids)
-        last_logits = logits[0, -1]
-        prediction = self.sample_top_k(last_logits, k=10)
-        #prediction = np.argmax(last_logits)
-        return prediction
     
 
     def step(self, lr : float):
