@@ -58,6 +58,16 @@ class Trainer:
         return loss
     
 
+    def validation_step(self, input_ids: np.ndarray, targets: np.ndarray) -> float:
+        """ Perform a single validation step and return the loss. """
+
+        # Forward pass
+        logits = self.model.forward(input_ids, train=False)
+        loss = self.loss_fn(logits, targets)
+
+        return loss
+    
+
     def train(self):
         """ Run the training loop and save the model after training. """
 
@@ -72,25 +82,34 @@ class Trainer:
         batch_builder = BatchBuilder(self.tokenizer.text, self.tokenizer)
         all_tokens = tokenize_text(self.tokenizer.text)
         chunks = batch_builder.create_chunks(all_tokens)
-        batches = batch_builder.create_batches(chunks)
-        total_batches = len(batches)
+        training_batches, validation_batches = batch_builder.create_batches(chunks)
+        total_batches = len(training_batches)
 
         print(f"Number of batches to train: {total_batches}")
 
         # Training loop with multiple epochs
         for epoch in range(1, NB_EPOCHS + 1):
             print(f"Epoch {epoch}/{NB_EPOCHS}")
-            np.random.shuffle(batches)
+            np.random.shuffle(training_batches)
 
-            for i, batch in enumerate(batches):
-                loss = self.train_step(batch[0], batch[1])
+            avg_train_loss = 0.0
+            nb_batches = 0
+            for i, batch in enumerate(training_batches):
+                train_loss = self.train_step(batch[0], batch[1])
+                avg_train_loss += train_loss
+                nb_batches += 1
 
                 # Display progress every 1% of the total batches
                 if i % max(1, total_batches // 100) == 0:
+                    validation_loss = self.validation_step(batch[0], batch[1])
+                    avg_train_loss /= nb_batches
                     percent = (i / total_batches) * 100
-                    sys.stdout.write(f"\r[{i}/{total_batches}] {percent:.1f}% - Loss: {loss:.4f}")
+                    sys.stdout.write(f"\r[{i}/{total_batches}] {percent:.1f}% - Loss: {avg_train_loss:.4f} - Val Loss: {validation_loss:.4f}")
                     sys.stdout.flush()
-                    self.logger.log(epoch, i, loss, np.exp(loss))
+                    self.logger.train_log(epoch, i, avg_train_loss, np.exp(avg_train_loss))
+                    self.logger.validation_log(epoch, i, validation_loss, np.exp(validation_loss))
+                    avg_train_loss = 0.0
+                    nb_batches = 0
                     self.save_model()
         
         print("\nModel saved successfully.")

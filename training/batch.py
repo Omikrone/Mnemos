@@ -37,15 +37,25 @@ class BatchBuilder:
 
     def create_batches(self, chunks : list) -> list[tuple[np.ndarray, np.ndarray]]:
         """ Create batches of BATCH_SIZE from the chunks. """
-        
-        batches = list()
-        nb_batches = len(chunks) // BATCH_SIZE
-        for i in range(nb_batches):
+
+        training_batches, validation_batches = list(), list()
+        nb_training_batches = int(len(chunks) // BATCH_SIZE * 0.9)
+        nb_validation_batches = int(len(chunks) // BATCH_SIZE - nb_training_batches)
+
+        for i in range(nb_training_batches):
             inputs = [couple[0] for couple in chunks[i*BATCH_SIZE : (i+1)*BATCH_SIZE]]
             targets = [couple[1] for couple in chunks[i*BATCH_SIZE : (i+1)*BATCH_SIZE]]
 
             inputs_batch = np.array(inputs)
             targets_batch = np.array(targets)
-            batches.append((inputs_batch, targets_batch))
-        
-        return batches
+            training_batches.append((inputs_batch, targets_batch))
+
+        for i in range(nb_validation_batches):
+            inputs = [couple[0] for couple in chunks[nb_training_batches*BATCH_SIZE + i*BATCH_SIZE : nb_training_batches*BATCH_SIZE + (i+1)*BATCH_SIZE]]
+            targets = [couple[1] for couple in chunks[nb_training_batches*BATCH_SIZE + i*BATCH_SIZE : nb_training_batches*BATCH_SIZE + (i+1)*BATCH_SIZE]]
+
+            inputs_batch = np.array(inputs)
+            targets_batch = np.array(targets)
+            validation_batches.append((inputs_batch, targets_batch))
+
+        return training_batches, validation_batches
