@@ -63,22 +63,26 @@ class TransformerBlock:
     def backward(self, grad_x2: np.ndarray) -> np.ndarray:
         """ Backward pass through the Transformer block. """
 
-        # === 1. MLP ===
-        grad_mlp_out = grad_x2                         # skip connection: x2 = x + mlp_out
-        grad_mlp = self.mlp.backward(grad_mlp_out)     # backward MLP
-        grad_ln2_input = self.ln2.backward(grad_mlp)   # backward LayerNorm 2
-        grad_x = grad_ln2_input + grad_mlp_out         # accumulate skip connection
+        # === 1. Dropout sur x2 ===
+        grad_x2 = self.dropout.backward(grad_x2)
 
-        # === 2. Dropout ===
-        grad_x = self.dropout.backward(grad_x)         # backward dropout
+        # === 2. MLP ===
+        grad_mlp_out = grad_x2                         # x2 = x + mlp_out
+        grad_mlp = self.mlp.backward(grad_mlp_out)
+        grad_ln2_input = self.ln2.backward(grad_mlp)
+        grad_x = grad_ln2_input + grad_mlp_out         # skip connection
 
-        # === 3. Self-Attention ===
-        grad_attn_out = grad_x                         # skip: x = inputs + attn_out
+        # === 3. Dropout sur x ===
+        grad_x = self.dropout.backward(grad_x)
+
+        # === 4. Self-attention ===
+        grad_attn_out = grad_x                         # x = inputs + attn_out
+        grad_attn_out = self.dropout.backward(grad_attn_out)  # dropout sur attn_out
         grad_attn = self.self_attention.backward(grad_attn_out)
-        grad_ln1_input = self.ln1.backward(grad_attn)  # backward LayerNorm 1
+        grad_ln1_input = self.ln1.backward(grad_attn)
 
-        # === 4. Skip connection ===
-        grad_input = grad_ln1_input + grad_attn_out    # total gradient wrt inputs
+        # === 5. Skip connection initiale ===
+        grad_input = grad_ln1_input + grad_attn_out
 
         return grad_input
 
