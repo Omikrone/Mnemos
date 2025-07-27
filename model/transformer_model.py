@@ -42,7 +42,7 @@ class TransformerModel:
         return instance
 
 
-    def forward(self, inputs : np.ndarray) -> np.ndarray:
+    def forward(self, inputs : np.ndarray, train: bool = True) -> np.ndarray:
         """ Forward pass through the Transformer model. """
 
         batch_size, seq_len = inputs.shape
@@ -52,7 +52,7 @@ class TransformerModel:
 
         for block in self.blocks:
             # Forward pass through each Transformer block
-            x = block.forward(x)
+            x = block.forward(x, train=train)
         self.last_x = x
         
         # Final linear transformation to produce logits
@@ -75,7 +75,7 @@ class TransformerModel:
         grad_embedding = self.embedding.backward(loss_gradient)
         grad_position = self.position.backward(loss_gradient)
         return grad_position + grad_embedding
-    
+
 
     def step(self, lr : float):
         """ Update the parameters of the Transformer model using gradient descent. """

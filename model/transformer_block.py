@@ -1,11 +1,12 @@
 import numpy as np
 
+from model.dropout import Dropout
 from model.gradient import Param
 from model.layer_norm import LayerNorm
 from model.mlp import MLP
 from model.attention import MultiHeadAttention
 from model.save_model import TransformerBlockParams
-from config.params import EMBEDDING_DIM
+from config.params import DROPOUT_RATE, EMBEDDING_DIM
 
 
 class TransformerBlock:
@@ -15,6 +16,7 @@ class TransformerBlock:
     self_attention : MultiHeadAttention
     ln2 : LayerNorm
     mlp : MLP
+    dropout : Dropout
 
 
     def __init__(self):
@@ -24,6 +26,7 @@ class TransformerBlock:
         self.self_attention = MultiHeadAttention()
         self.ln2 = LayerNorm(EMBEDDING_DIM)
         self.mlp = MLP()
+        self.dropout = Dropout(DROPOUT_RATE)
 
 
     @classmethod
@@ -38,37 +41,47 @@ class TransformerBlock:
         return instance
 
 
-    def forward(self, inputs : np.ndarray):
+    def forward(self, inputs : np.ndarray, train: bool = True) -> np.ndarray:
         """ Forward pass through the Transformer block. """
 
         # Layer normalization and residual connection for the self-attention sub-layer
         norm_x = self.ln1.forward(inputs)
         attn_out = self.self_attention.forward(norm_x)
+        attn_out = self.dropout.forward(attn_out, train=train)
         x = inputs + attn_out
+        x = self.dropout.forward(x, train=train)
 
         # Layer normalization and residual connection for the MLP sub-layer
         norm_x = self.ln2.forward(x)
-        mlp_out = self.mlp.feed_forward(norm_x)
+        mlp_out = self.mlp.feed_forward(norm_x, train=train)
         x2 = x + mlp_out
+        x2 = self.dropout.forward(x2, train=train)
 
         return x2
 
 
-    def backward(self, grad_x2) -> np.ndarray:
+    def backward(self, grad_x2: np.ndarray) -> np.ndarray:
         """ Backward pass through the Transformer block. """
 
-        # Backpropagation through the MLP layer
-        grad_mlp = self.mlp.backward(grad_x2)
-        grad_ln2 = self.ln2.backward(grad_mlp)
-        grad_x = grad_ln2 + grad_x2
+        # === 1. MLP ===
+        grad_mlp_out = grad_x2                         # skip connection: x2 = x + mlp_out
+        grad_mlp = self.mlp.backward(grad_mlp_out)     # backward MLP
+        grad_ln2_input = self.ln2.backward(grad_mlp)   # backward LayerNorm 2
+        grad_x = grad_ln2_input + grad_mlp_out         # accumulate skip connection
 
-        # Backpropagation through the self-attention layer
-        grad_a = self.self_attention.backward(grad_x)
-        grad_ln1 = self.ln1.backward(grad_a)
-        grad_input = grad_ln1 + grad_x
+        # === 2. Dropout ===
+        grad_x = self.dropout.backward(grad_x)         # backward dropout
+
+        # === 3. Self-Attention ===
+        grad_attn_out = grad_x                         # skip: x = inputs + attn_out
+        grad_attn = self.self_attention.backward(grad_attn_out)
+        grad_ln1_input = self.ln1.backward(grad_attn)  # backward LayerNorm 1
+
+        # === 4. Skip connection ===
+        grad_input = grad_ln1_input + grad_attn_out    # total gradient wrt inputs
 
         return grad_input
-    
+
 
     def step(self, lr : float):
         """ Update the parameters of the Transformer block using gradient descent. """
@@ -86,6 +99,7 @@ class TransformerBlock:
         self.mlp.zero_grad()
         self.ln1.zero_grad()
         self.ln2.zero_grad()
+        self.dropout.zero_grad()
 
 
     def get_parameters(self) -> TransformerBlockParams:

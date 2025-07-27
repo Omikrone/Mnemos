@@ -34,7 +34,6 @@ class Inference:
         tokens = tokens.reshape(B*T, D)
 
         for _ in range(max_length):
-            print(f"Current length: {tokens.shape[1]}")
             if tokens.shape[1] >= max_length:
                 break
 
@@ -51,7 +50,7 @@ class Inference:
     def predict_next_token(self, input_ids: np.ndarray) -> int:
         """ Predict the next token given the input IDs. """
 
-        logits = self.model.forward(input_ids)
+        logits = self.model.forward(input_ids, train=False)
         last_logits = logits[0, -1]
         prediction = self.sample_top_k(last_logits, k=10)
         return prediction

@@ -46,7 +46,7 @@ class Trainer:
         """ Perform a single training step and return the loss. """
 
         # Forward pass
-        logits = self.model.forward(input_ids)
+        logits = self.model.forward(input_ids, train=True)
         loss = self.loss_fn(logits, targets)
 
         # Backward pass

@@ -48,7 +48,7 @@ class Tester:
     def test_step(self, input_ids: np.ndarray, targets: np.ndarray) -> float:
         """ Perform a single test step and return the loss. """
 
-        logits = self.model.forward(input_ids)
+        logits = self.model.forward(input_ids, train=False)
         loss = self.loss_fn(logits, targets)
         return loss
     

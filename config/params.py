@@ -10,14 +10,15 @@ CHUNK_SIZE = 64                 # Size of chunks to split the text into for trai
 BATCH_SIZE = 8                  # Number of sequences in a batch
 
 ## Training parameters
-LEARNING_RATE = 1e-4            # Learning rate for the optimizer
-NB_EPOCHS = 3                   # Number of epochs for training
+LEARNING_RATE = 1e-3            # Learning rate for the optimizer
+NB_EPOCHS = 5                   # Number of epochs for training
 
 ## Model parameters
 EMBEDDING_DIM = 128             # Dimension of the embedding vectors
-HIDDEN_DIM = 256                # Dimension of the hidden layers
+HIDDEN_DIM = 512                # Dimension of the hidden layers
 NB_ATTENTION_HEADS = 2          # Number of self-attention heads
-NB_LAYERS = 1                   # Number of layers in the Transformer model
+NB_LAYERS = 2                   # Number of layers in the Transformer model
+DROPOUT_RATE = 0.1              # Dropout rate for regularization
 
 ## Layer parameters
 EPS = 1e-5                      # Small value to avoid division by zero in layer normalization
