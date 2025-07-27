@@ -92,24 +92,31 @@ class Trainer:
             print(f"Epoch {epoch}/{NB_EPOCHS}")
             np.random.shuffle(training_batches)
 
-            avg_train_loss = 0.0
-            nb_batches = 0
+            avg_train_loss, avg_val_loss = 0.0, 0.0
+            nb_train_batches, nb_val_batches = 0, 0
             for i, batch in enumerate(training_batches):
                 train_loss = self.train_step(batch[0], batch[1])
                 avg_train_loss += train_loss
-                nb_batches += 1
+                nb_train_batches += 1
+                nb_val_batches += 1
+
+                # Launch validation every 100 batches
+                if i % 100 == 0 and i > 0:
+                    validation_loss = self.validation_step(batch[0], batch[1])
+                    avg_val_loss /= nb_val_batches
+                    self.logger.validation_log(epoch, i, validation_loss, np.exp(validation_loss))
+                    avg_val_loss = 0.0
 
                 # Display progress every 1% of the total batches
                 if i % max(1, total_batches // 100) == 0:
                     validation_loss = self.validation_step(batch[0], batch[1])
-                    avg_train_loss /= nb_batches
+                    avg_train_loss /= nb_train_batches
                     percent = (i / total_batches) * 100
                     sys.stdout.write(f"\r[{i}/{total_batches}] {percent:.1f}% - Loss: {avg_train_loss:.4f} - Val Loss: {validation_loss:.4f}")
                     sys.stdout.flush()
                     self.logger.train_log(epoch, i, avg_train_loss, np.exp(avg_train_loss))
-                    self.logger.validation_log(epoch, i, validation_loss, np.exp(validation_loss))
                     avg_train_loss = 0.0
-                    nb_batches = 0
+                    nb_train_batches = 0
                     self.save_model()
         
         print("\nModel saved successfully.")
