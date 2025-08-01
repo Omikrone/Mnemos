@@ -39,7 +39,7 @@ class UserInterface:
     def train_model(self):
         """ Train a new model. """
 
-        self.trainer = Trainer()
+        self.trainer = Trainer(resume_training=False)
         self.trainer.train()
 
 

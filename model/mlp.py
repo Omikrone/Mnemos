@@ -75,7 +75,7 @@ class MLP:
         dh_relu = loss_gradient @ self.w_down.value.T
 
         # === Pass through dropout mask ===
-        dh_relu = self.dropout.backward(dh_relu)  # ← ici on passe le gradient venant du dessus
+        dh_relu = self.dropout.backward(dh_relu)
 
         # === Gradient through ReLU ===
         dh_relu = dh_relu * (self.h > 0)

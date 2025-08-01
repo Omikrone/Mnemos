@@ -62,7 +62,7 @@ class Tester:
         batch_builder = BatchBuilder(self.tokenizer.text, self.tokenizer)
         all_tokens = tokenize_text(self.tokenizer.text)
         chunks = batch_builder.create_chunks(all_tokens)
-        batches = batch_builder.create_batches(chunks)
+        batches, val_batches = batch_builder.create_batches(chunks)
         global_loss = 0.0
 
         for batch in batches:

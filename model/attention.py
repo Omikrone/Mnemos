@@ -2,7 +2,7 @@ import numpy as np
 
 from model.gradient import Param
 from model.save_model import AttentionParams, MultiHeadAttentionParams
-from config.params import EMBEDDING_DIM, NB_ATTENTION_HEADS
+from config.params import EMBEDDING_DIM, NB_ATTENTION_HEADS, EPS
 
 
 class SelfAttention:
@@ -23,9 +23,10 @@ class SelfAttention:
         """ Initialize the attention matrices with random values. """
 
         # Random initialization of attention matrices
-        self.query_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * 0.01)
-        self.key_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * 0.01)
-        self.value_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * 0.01)
+        std = np.sqrt(2.0 / (EMBEDDING_DIM + EMBEDDING_DIM))
+        self.query_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * std)
+        self.key_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * std)
+        self.value_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * std)
 
 
     @classmethod
@@ -40,38 +41,32 @@ class SelfAttention:
 
 
     def add_attention(self, input_embeddings: np.ndarray) -> np.ndarray:
-        """ Add causal multi-head attention weights to the inputs """
-
-        self.input_embeddings = input_embeddings  # (B, T, D)
-
+        self.input_embeddings = input_embeddings
+        
         # Projections
-        self.query = input_embeddings @ self.query_matrix.value  # (B, T, D)
-        self.key   = input_embeddings @ self.key_matrix.value    # (B, T, D)
-        self.value = input_embeddings @ self.value_matrix.value  # (B, T, D)
+        self.query = input_embeddings @ self.query_matrix.value
+        self.key   = input_embeddings @ self.key_matrix.value
+        self.value = input_embeddings @ self.value_matrix.value
 
         # Attention scores
         d_k = input_embeddings.shape[-1]
-        scores = self.query @ self.key.transpose(0, 2, 1) / np.sqrt(d_k)  # (B, T, T)
-        
-        # Clip pour éviter overflow
-        scores = np.clip(scores, -1e4, 1e4)
+        scale = np.sqrt(d_k)  # Retirer EPS
+        scores = self.query @ self.key.transpose(0, 2, 1) / scale
 
-        # Masque causal
+        # Apply softmax to the scores
         seq_len = input_embeddings.shape[1]
-        mask = np.tril(np.ones((seq_len, seq_len), dtype=np.float32))[None, :, :]  # (1, T, T)
-        scores = np.where(mask == 1, scores, -1e9)  # évite -inf direct
+        mask = np.tril(np.ones((seq_len, seq_len), dtype=np.bool_))[None, :, :]
+        scores = np.where(mask, scores, -np.inf)
 
-        # Softmax stable
-        max_scores = np.max(scores, axis=-1, keepdims=True)     # (B, T, 1)
-        scores = scores - max_scores                            # stabilité
-        exp_scores = np.exp(scores) * mask                      # annule les zones masquées
-        sum_exp = np.sum(exp_scores, axis=-1, keepdims=True) + 1e-9  # évite /0
-        self.attention_weights = exp_scores / sum_exp           # (B, T, T)
+        # Softmax with numerical stability
+        max_scores = np.max(scores, axis=-1, keepdims=True)
+        scores = scores - max_scores
+        exp_scores = np.exp(scores)
+        sum_exp = np.sum(exp_scores, axis=-1, keepdims=True) + 1e-9
+        self.attention_weights = exp_scores / sum_exp
 
-        # Output
-        self.output = self.attention_weights @ self.value       # (B, T, D)
+        self.output = self.attention_weights @ self.value
         return self.output
-
     
 
     def backward(self, d_output) -> np.ndarray:
@@ -86,7 +81,9 @@ class SelfAttention:
 
         # Backpropagation through softmax (stabilized)
         softmax = self.attention_weights
-        d_scores = d_weights * softmax * (1 - softmax)
+        d_softmax = d_weights  # (B, T, T)
+        temp = (d_softmax * softmax).sum(axis=-1, keepdims=True)  # (B, T, 1)
+        d_scores = softmax * (d_softmax - temp)  # (B, T, T)
 
         # Gradient with respect to query and key
         d_query = d_scores @ self.key / sqrt_d
@@ -141,7 +138,6 @@ class MultiHeadAttention:
 
     attention_heads : list[SelfAttention]
     concat : np.ndarray
-    inputs : np.ndarray
     w_out : Param
     b_out : Param
 
@@ -167,7 +163,6 @@ class MultiHeadAttention:
     def forward(self, inputs):
         heads_out = [head.add_attention(inputs) for head in self.attention_heads]
         self.concat = np.concatenate(heads_out, axis=-1)
-        self.inputs = inputs
         output = self.concat @ self.w_out.value + self.b_out.value
         return output
     

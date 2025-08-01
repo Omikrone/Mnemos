@@ -1,7 +1,6 @@
 import numpy as np
 
 from model.dropout import Dropout
-from model.gradient import Param
 from model.layer_norm import LayerNorm
 from model.mlp import MLP
 from model.attention import MultiHeadAttention

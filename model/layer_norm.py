@@ -47,7 +47,7 @@ class LayerNorm:
         # Compute the mean, variance, and standard deviation for normalization
         self.mean = np.mean(x, axis=-1, keepdims=True)
         self.var = np.var(x, axis=-1, keepdims=True)
-        self.std = np.sqrt(self.var + self.eps)
+        self.std = np.maximum(np.sqrt(self.var + self.eps), 1e-6)
 
         # Normalize the inputs
         self.x_norm = (x - self.mean) / self.std
@@ -71,6 +71,7 @@ class LayerNorm:
         dx_norm = dout * self.gamma.value
         dvar = np.sum(dx_norm * (self.x - self.mean) * -0.5 * self.std**-3, axis=-1, keepdims=True)
         dmean = np.sum(-dx_norm / self.std, axis=-1, keepdims=True) + dvar * np.mean(-2.0 * (self.x - self.mean), axis=-1, keepdims=True)
+        dx = dx_norm / self.std + dvar * 2.0 * (self.x - self.mean) / D + dmean / D
 
         # Compute gradient of inputs
         dx = dx_norm / self.std + dvar * 2.0 * (self.x - self.mean) / D + dmean / D
