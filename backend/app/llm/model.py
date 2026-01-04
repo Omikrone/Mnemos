@@ -7,4 +7,5 @@ class LLM:
 
     def generate_text(self, prompt: str) -> str:
         """Generate text based on the given prompt using the model."""
-        return self.model.generate(prompt)
+        response = self.model.generate(prompt)
+        return response

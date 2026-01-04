@@ -8,4 +8,4 @@ llm = load_llm()
 
 @router.post("/")
 def chat(req: ChatRequest) -> ChatResponse:
-    return llm.generate_text(req.prompt)
+    return ChatResponse(text=llm.generate_text(req.prompt))
