@@ -28,17 +28,20 @@ class TransformerModel:
 
 
     @classmethod
-    def from_params(cls, params: ModelParams) -> 'TransformerModel':
+    def from_params(cls, params: dict) -> 'TransformerModel':
         """ Create an instance of TransformerModel from saved parameters. """
 
-        instance = cls(vocab_size=params.embedding_matrix.shape[0])
-        instance.embedding = TokenEmbedding.from_params(params.embedding_matrix)
-        instance.position = PositionEmbedding.from_params(params.position_matrix)
+        model_params = ModelParams.from_state_dict(params)
+
+        # Load parameters into an instance of ModelParams from dict
+        instance = cls(vocab_size=model_params.embedding_matrix.shape[0])
+        instance.embedding = TokenEmbedding.from_params(model_params.embedding_matrix)
+        instance.position = PositionEmbedding.from_params(model_params.position_matrix)
         instance.blocks = [
-            TransformerBlock.from_params(block_params) for block_params in params.transformer_block_params
+            TransformerBlock.from_params(block_params) for block_params in model_params.transformer_block_params
         ]
-        instance.w_out = Param(params.w_out)
-        instance.b_out = Param(params.b_out)
+        instance.w_out = Param(model_params.w_out)
+        instance.b_out = Param(model_params.b_out)
         return instance
 
 

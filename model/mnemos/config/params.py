@@ -17,7 +17,7 @@ NB_EPOCHS = 7                   # Number of epochs for training
 EMBEDDING_DIM = 256             # Dimension of the embedding vectors
 HIDDEN_DIM = 1024               # Dimension of the hidden layers
 NB_ATTENTION_HEADS = 4          # Number of self-attention heads
-NB_LAYERS = 1                   # Number of layers in the Transformer model
+NB_LAYERS = 2                   # Number of layers in the Transformer model
 DROPOUT_RATE = 0.1              # Dropout rate for regularization
 
 ## Layer parameters

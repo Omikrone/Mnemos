@@ -68,6 +68,8 @@ class Inference:
     def load_model(self, model_path: Path, vocab_path: Path) -> TransformerModel:
         """ Load the model from a file. """
 
+        print("Curren directory:", Path.cwd())
+        print("Loading model from:", model_path)
         with open(model_path, "rb") as f:
             model_params = pickle.load(f)
 
