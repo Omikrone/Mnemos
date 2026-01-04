@@ -1,7 +1,6 @@
 from pathlib import Path
 
-ROOT_DIR = Path('.')
-
+ROOT_DIR = Path(__file__).parent.parent
 
 SAVED_MODEL_DIR = ROOT_DIR / "save"
 MODEL_PATH = SAVED_MODEL_DIR / "model.pkl"

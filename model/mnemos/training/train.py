@@ -6,15 +6,15 @@ import json
 from datetime import datetime
 import time
 
-from metrics.training_logger import TrainingLogger
-from model.transformer_model import TransformerModel
-from training.tokenizer.parallel_encoding import tokenize_text
-from training.batch import BatchBuilder
-from training.cross_entropy import CrossEntropyLoss
-from training.preprocesser import PreProcesser
-from training.tokenizer.bpe import BPETokenizer
-from config.paths import TRAINING_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
-from config.params import LEARNING_RATE, NB_EPOCHS
+from mnemos.metrics.training_logger import TrainingLogger
+from mnemos.transformer.transformer_model import TransformerModel
+from mnemos.training.tokenizer.parallel_encoding import tokenize_text
+from mnemos.training.batch import BatchBuilder
+from mnemos.training.cross_entropy import CrossEntropyLoss
+from mnemos.training.preprocesser import PreProcesser
+from mnemos.training.tokenizer.bpe import BPETokenizer
+from mnemos.config.paths import TRAINING_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
+from mnemos.config.params import LEARNING_RATE, NB_EPOCHS
 
 class Trainer:
     """Trainer class with enhanced logging and monitoring."""

@@ -3,11 +3,11 @@ import numpy as np
 import pickle
 from pathlib import Path
 
-from training.tokenizer.parallel_encoding import tokenize_text
-from training.tokenizer.bpe import BPETokenizer
-from model.transformer_model import TransformerModel
-from config.paths import MODEL_PATH, VOCABULARY_PATH
-from config.params import MAX_SEQUENCE_LENGTH
+from mnemos.training.tokenizer.parallel_encoding import tokenize_text
+from mnemos.training.tokenizer.bpe import BPETokenizer
+from mnemos.transformer.transformer_model import TransformerModel
+from mnemos.config.paths import MODEL_PATH, VOCABULARY_PATH
+from mnemos.config.params import MAX_SEQUENCE_LENGTH
 
 
 class Inference:
@@ -68,6 +68,8 @@ class Inference:
     def load_model(self, model_path: Path, vocab_path: Path) -> TransformerModel:
         """ Load the model from a file. """
 
+        print("Curren directory:", Path.cwd())
+        print("Loading model from:", model_path)
         with open(model_path, "rb") as f:
             model_params = pickle.load(f)
 

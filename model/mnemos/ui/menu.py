@@ -1,6 +1,6 @@
-from generating.inference import Inference
-from training.test import Tester
-from training.train import Trainer
+from mnemos.generating.inference import Inference
+from mnemos.training.test import Tester
+from mnemos.training.train import Trainer
 
 
 class UserInterface:

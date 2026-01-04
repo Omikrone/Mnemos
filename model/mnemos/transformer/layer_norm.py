@@ -1,8 +1,8 @@
 import numpy as np
 
-from model.gradient import Param
-from model.save_model import LayerNormParams
-from config.params import EPS
+from mnemos.transformer.gradient import Param
+from mnemos.transformer.save_model import LayerNormParams
+from mnemos.config.params import EPS
 
 
 class LayerNorm:

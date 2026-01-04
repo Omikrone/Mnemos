@@ -2,8 +2,8 @@ import heapq
 from multiprocessing import Pool, cpu_count
 import time
 
-from training.tokenizer.vocabulary import VocabularyManager
-from config.paths import MERGES_PATH, VOCABULARY_PATH
+from mnemos.training.tokenizer.vocabulary import VocabularyManager
+from mnemos.config.paths import MERGES_PATH, VOCABULARY_PATH
 
 
 global_table = None

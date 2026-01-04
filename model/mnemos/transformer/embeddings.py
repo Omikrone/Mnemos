@@ -1,7 +1,7 @@
 import numpy as np
 
-from model.gradient import Param
-from config.params import EMBEDDING_DIM, MAX_SEQUENCE_LENGTH
+from mnemos.transformer.gradient import Param
+from mnemos.config.params import EMBEDDING_DIM, MAX_SEQUENCE_LENGTH
 
 
 class TokenEmbedding:
