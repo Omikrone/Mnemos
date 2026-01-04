@@ -1,11 +1,11 @@
 import numpy as np
 
-from model.dropout import Dropout
-from model.layer_norm import LayerNorm
-from model.mlp import MLP
-from model.attention import MultiHeadAttention
-from model.save_model import TransformerBlockParams
-from config.params import DROPOUT_RATE, EMBEDDING_DIM
+from mnemos.transformer.dropout import Dropout
+from mnemos.transformer.layer_norm import LayerNorm
+from mnemos.transformer.mlp import MLP
+from mnemos.transformer.attention import MultiHeadAttention
+from mnemos.transformer.save_model import TransformerBlockParams
+from mnemos.config.params import DROPOUT_RATE, EMBEDDING_DIM
 
 
 class TransformerBlock:

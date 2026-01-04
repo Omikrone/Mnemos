@@ -3,13 +3,13 @@ import pickle
 import sys
 import numpy as np
 
-from model.transformer_model import TransformerModel
-from training.batch import BatchBuilder
-from training.preprocesser import PreProcesser
-from training.cross_entropy import CrossEntropyLoss
-from training.tokenizer.bpe import BPETokenizer
-from config.paths import TEST_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
-from training.tokenizer.parallel_encoding import tokenize_text
+from mnemos.transformer.transformer_model import TransformerModel
+from mnemos.training.batch import BatchBuilder
+from mnemos.training.preprocesser import PreProcesser
+from mnemos.training.cross_entropy import CrossEntropyLoss
+from mnemos.training.tokenizer.bpe import BPETokenizer
+from mnemos.config.paths import TEST_DATA_PATH, MODEL_PATH, VOCABULARY_PATH
+from mnemos.training.tokenizer.parallel_encoding import tokenize_text
 
 
 

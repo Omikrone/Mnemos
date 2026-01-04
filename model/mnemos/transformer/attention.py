@@ -1,8 +1,8 @@
 import numpy as np
 
-from model.gradient import Param
-from model.save_model import AttentionParams, MultiHeadAttentionParams
-from config.params import EMBEDDING_DIM, NB_ATTENTION_HEADS, EPS
+from mnemos.transformer.gradient import Param
+from mnemos.transformer.save_model import AttentionParams, MultiHeadAttentionParams
+from mnemos.config.params import EMBEDDING_DIM, NB_ATTENTION_HEADS, EPS
 
 
 class SelfAttention:

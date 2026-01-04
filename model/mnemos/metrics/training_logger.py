@@ -1,7 +1,7 @@
 import csv
 from pathlib import Path
 
-from config.paths import TRAINING_LOG_PATH, VALIDATION_LOG_PATH
+from mnemos.config.paths import TRAINING_LOG_PATH, VALIDATION_LOG_PATH
 
 
 class TrainingLogger:

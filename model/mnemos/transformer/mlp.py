@@ -1,9 +1,9 @@
 import numpy as np
 
-from model.dropout import Dropout
-from model.gradient import Param
-from model.save_model import MLPParams
-from config.params import DROPOUT_RATE, EMBEDDING_DIM, HIDDEN_DIM
+from mnemos.transformer.dropout import Dropout
+from mnemos.transformer.gradient import Param
+from mnemos.transformer.save_model import MLPParams
+from mnemos.config.params import DROPOUT_RATE, EMBEDDING_DIM, HIDDEN_DIM
 
 
 class MLP:

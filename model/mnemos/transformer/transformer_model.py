@@ -1,10 +1,10 @@
 import numpy as np
 
-from model.embeddings import PositionEmbedding, TokenEmbedding
-from model.gradient import Param
-from model.save_model import ModelParams
-from model.transformer_block import TransformerBlock
-from config.params import EMBEDDING_DIM, NB_LAYERS
+from mnemos.transformer.embeddings import PositionEmbedding, TokenEmbedding
+from mnemos.transformer.gradient import Param
+from mnemos.transformer.save_model import ModelParams
+from mnemos.transformer.transformer_block import TransformerBlock
+from mnemos.config.params import EMBEDDING_DIM, NB_LAYERS
 
 
 class TransformerModel:

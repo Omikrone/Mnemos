@@ -2,7 +2,7 @@ import unicodedata
 import re
 import os
 
-from config.paths import *
+from mnemos.config.paths import *
 
 
 MIN_LENGTH_LINE = 10

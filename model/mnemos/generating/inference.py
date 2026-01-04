@@ -3,11 +3,11 @@ import numpy as np
 import pickle
 from pathlib import Path
 
-from training.tokenizer.parallel_encoding import tokenize_text
-from training.tokenizer.bpe import BPETokenizer
-from model.transformer_model import TransformerModel
-from config.paths import MODEL_PATH, VOCABULARY_PATH
-from config.params import MAX_SEQUENCE_LENGTH
+from mnemos.training.tokenizer.parallel_encoding import tokenize_text
+from mnemos.training.tokenizer.bpe import BPETokenizer
+from mnemos.transformer.transformer_model import TransformerModel
+from mnemos.config.paths import MODEL_PATH, VOCABULARY_PATH
+from mnemos.config.params import MAX_SEQUENCE_LENGTH
 
 
 class Inference:
