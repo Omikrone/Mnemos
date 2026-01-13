@@ -1,5 +1,4 @@
-import numpy as np
-
+from mnemos import xp
 from mnemos.transformer.dropout import Dropout
 from mnemos.transformer.gradient import Param
 from mnemos.transformer.save_model import MLPParams
@@ -11,11 +10,11 @@ class MLP:
 
     w_up : Param
     b_up : Param
-    h : np.ndarray
-    h_relu : np.ndarray
+    h : xp.ndarray
+    h_relu : xp.ndarray
     w_down : Param
     b_down : Param
-    inputs : np.ndarray
+    inputs : xp.ndarray
     dropout : Dropout
 
 
@@ -23,12 +22,12 @@ class MLP:
         """ Initialize the MLP with random weights and biases. """
 
         # Random initialization of weights for the first and second layers
-        self.w_up = Param(np.random.randn(EMBEDDING_DIM, HIDDEN_DIM) * 0.01)  # Expanded weight matrix (larger dimension)
-        self.w_down = Param(np.random.randn(HIDDEN_DIM, EMBEDDING_DIM) * 0.01)  # Reduced weight matrix (back to input dimension)
+        self.w_up = Param(xp.random.randn(EMBEDDING_DIM, HIDDEN_DIM) * 0.01)  # Expanded weight matrix (larger dimension)
+        self.w_down = Param(xp.random.randn(HIDDEN_DIM, EMBEDDING_DIM) * 0.01)  # Reduced weight matrix (back to input dimension)
 
         # Random initialization of biases
-        self.b_up = Param(np.zeros((1, HIDDEN_DIM)))  # Bias for the first layer
-        self.b_down = Param(np.zeros((1, EMBEDDING_DIM)))  # Bias for the second layer
+        self.b_up = Param(xp.zeros((1, HIDDEN_DIM)))  # Bias for the first layer
+        self.b_down = Param(xp.zeros((1, EMBEDDING_DIM)))  # Bias for the second layer
         self.dropout = Dropout(DROPOUT_RATE)  # Dropout layer with a rate of 0.1
 
 
@@ -44,7 +43,7 @@ class MLP:
         return instance
 
 
-    def feed_forward(self, inputs : np.ndarray, train : bool = True) -> np.ndarray:
+    def feed_forward(self, inputs : xp.ndarray, train : bool = True) -> xp.ndarray:
         """ Apply the MLP layer to the given inputs. """
 
         self.inputs = inputs
@@ -53,7 +52,7 @@ class MLP:
         self.h = self.inputs @ self.w_up.value + self.b_up.value
 
         # Apply the ReLU activation function (non-linearity) -> Inactive neurons are set to 0
-        self.h_relu = np.maximum(0, self.h)
+        self.h_relu = xp.maximum(0, self.h)
         self.h_relu = self.dropout.forward(self.h_relu, train=train)
 
         # Dot product between the ReLU output and the weights of the second layer, then add the bias
@@ -62,14 +61,14 @@ class MLP:
         return out
     
 
-    def backward(self, loss_gradient: np.ndarray) -> np.ndarray:
+    def backward(self, loss_gradient: xp.ndarray) -> xp.ndarray:
         """ Calcul des gradients du MLP pour la rétropropagation. """
 
         B, T, _ = loss_gradient.shape
 
         # === Gradient layer 2 (ReLU -> w_down) ===
         self.w_down.gradient += self.h_relu.reshape(B*T, -1).T @ loss_gradient.reshape(B*T, -1)
-        self.b_down.gradient += np.sum(loss_gradient, axis=(0, 1))
+        self.b_down.gradient += xp.sum(loss_gradient, axis=(0, 1))
 
         # === Gradient w.r.t. h_relu ===
         dh_relu = loss_gradient @ self.w_down.value.T
@@ -82,7 +81,7 @@ class MLP:
 
         # === Gradient layer 1 (inputs -> w_up) ===
         self.w_up.gradient += self.inputs.reshape(B*T, -1).T @ dh_relu.reshape(B*T, -1)
-        self.b_up.gradient += np.sum(dh_relu, axis=(0, 1))
+        self.b_up.gradient += xp.sum(dh_relu, axis=(0, 1))
 
         dx = dh_relu @ self.w_up.value.T
         return dx

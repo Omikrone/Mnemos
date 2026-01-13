@@ -1,5 +1,4 @@
-import numpy as np
-
+from mnemos import xp
 from mnemos.transformer.dropout import Dropout
 from mnemos.transformer.layer_norm import LayerNorm
 from mnemos.transformer.mlp import MLP
@@ -40,7 +39,7 @@ class TransformerBlock:
         return instance
 
 
-    def forward(self, inputs : np.ndarray, train: bool = True) -> np.ndarray:
+    def forward(self, inputs : xp.ndarray, train: bool = True) -> xp.ndarray:
         """ Forward pass through the Transformer block. """
 
         # Layer normalization and residual connection for the self-attention sub-layer
@@ -59,7 +58,7 @@ class TransformerBlock:
         return x2
 
 
-    def backward(self, grad_x2: np.ndarray) -> np.ndarray:
+    def backward(self, grad_x2: xp.ndarray) -> xp.ndarray:
         """ Backward pass through the Transformer block. """
 
         # === 1. Dropout sur x2 ===

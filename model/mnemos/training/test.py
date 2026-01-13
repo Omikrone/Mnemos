@@ -1,8 +1,8 @@
 from pathlib import Path
 import pickle
 import sys
-import numpy as np
 
+from mnemos import xp
 from mnemos.transformer.transformer_model import TransformerModel
 from mnemos.training.batch import BatchBuilder
 from mnemos.training.preprocesser import PreProcesser
@@ -45,7 +45,7 @@ class Tester:
         return TransformerModel.from_params(model_params)
     
 
-    def test_step(self, input_ids: np.ndarray, targets: np.ndarray) -> float:
+    def test_step(self, input_ids: xp.ndarray, targets: xp.ndarray) -> float:
         """ Perform a single test step and return the loss. """
 
         logits = self.model.forward(input_ids, train=False)

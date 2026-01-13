@@ -1,14 +1,15 @@
-import numpy as np
 from dataclasses import dataclass
+
+from mnemos import xp
 
 
 @dataclass
 class AttentionParams:
     """ Parameters for the attention mechanism. """
 
-    query_matrix: np.ndarray
-    key_matrix: np.ndarray
-    value_matrix: np.ndarray
+    query_matrix: xp.ndarray
+    key_matrix: xp.ndarray
+    value_matrix: xp.ndarray
 
     def state_dict(self) -> dict:
         """ Convert the attention parameters to a state dictionary. """
@@ -29,8 +30,8 @@ class AttentionParams:
 class MultiHeadAttentionParams:
     """ Parameters for teh multi head attention mechanism """
 
-    w_out : np.ndarray
-    b_out : np.ndarray
+    w_out : xp.ndarray
+    b_out : xp.ndarray
     attention_heads : list[AttentionParams]
 
     def state_dict(self) -> dict:
@@ -52,10 +53,10 @@ class MultiHeadAttentionParams:
 class MLPParams:
     """ Parameters for the Multi-Layer Perceptron (MLP). """
 
-    w_up: np.ndarray
-    b_up: np.ndarray
-    w_down: np.ndarray
-    b_down: np.ndarray
+    w_up: xp.ndarray
+    b_up: xp.ndarray
+    w_down: xp.ndarray
+    b_down: xp.ndarray
 
     def state_dict(self) -> dict:
         """ Convert the MLP parameters to a state dictionary. """
@@ -78,8 +79,8 @@ class MLPParams:
 class LayerNormParams:
     """ Parameters for Layer Normalization. """
 
-    gamma: np.ndarray
-    beta: np.ndarray
+    gamma: xp.ndarray
+    beta: xp.ndarray
     eps: float
 
     def state_dict(self) -> dict:
@@ -125,11 +126,11 @@ class TransformerBlockParams:
 class ModelParams:
     """ Parameters for the entire model. """
 
-    embedding_matrix: np.ndarray
-    position_matrix: np.ndarray
+    embedding_matrix: xp.ndarray
+    position_matrix: xp.ndarray
     transformer_block_params: list[TransformerBlockParams]
-    w_out: np.ndarray
-    b_out: np.ndarray
+    w_out: xp.ndarray
+    b_out: xp.ndarray
 
     def state_dict(self) -> dict:
         return {

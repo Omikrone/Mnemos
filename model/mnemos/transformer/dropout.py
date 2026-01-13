@@ -1,4 +1,4 @@
-import numpy as np
+from mnemos import xp
 
 
 class Dropout:
@@ -7,18 +7,18 @@ class Dropout:
         self.masks = []
 
 
-    def forward(self, x: np.ndarray, train: bool = True) -> np.ndarray:
+    def forward(self, x: xp.ndarray, train: bool = True) -> xp.ndarray:
         """ Apply dropout to the input x during training. """
 
         if train and self.rate > 0.0:
-            mask = (np.random.rand(*x.shape) > self.rate).astype(np.float32)
+            mask = (xp.random.rand(*x.shape) > self.rate).astype(xp.float32)
             self.masks.append(mask)
             return x * mask / (1.0 - self.rate)
         else:
             return x
 
 
-    def backward(self, grad_output: np.ndarray) -> np.ndarray:
+    def backward(self, grad_output: xp.ndarray) -> xp.ndarray:
         """ Backward pass through the dropout layer. """
         
         mask = self.masks.pop()

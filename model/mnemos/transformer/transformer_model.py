@@ -1,5 +1,4 @@
-import numpy as np
-
+from mnemos import xp
 from mnemos.transformer.embeddings import PositionEmbedding, TokenEmbedding
 from mnemos.transformer.gradient import Param
 from mnemos.transformer.save_model import ModelParams
@@ -23,8 +22,8 @@ class TransformerModel:
         self.embedding = TokenEmbedding(vocab_size)
         self.position = PositionEmbedding()
         self.blocks = [TransformerBlock() for _ in range(NB_LAYERS)]
-        self.w_out = Param(np.random.randn(EMBEDDING_DIM, vocab_size) * 0.02)
-        self.b_out = Param(np.zeros((vocab_size,)))
+        self.w_out = Param(xp.random.randn(EMBEDDING_DIM, vocab_size) * 0.02)
+        self.b_out = Param(xp.zeros((vocab_size,)))
 
 
     @classmethod
@@ -45,7 +44,7 @@ class TransformerModel:
         return instance
 
 
-    def forward(self, inputs : np.ndarray, train: bool = True) -> np.ndarray:
+    def forward(self, inputs : xp.ndarray, train: bool = True) -> xp.ndarray:
         """ Forward pass through the Transformer model. """
 
         batch_size, seq_len = inputs.shape
@@ -64,12 +63,12 @@ class TransformerModel:
         return logits
 
 
-    def backward(self, loss_gradient) -> np.ndarray:
+    def backward(self, loss_gradient) -> xp.ndarray:
         """ Backward pass through the Transformer model. """
 
         # Compute gradients for the output layer
-        self.w_out.gradient = np.einsum('btd,btv->dv', self.last_x, loss_gradient)
-        self.b_out.gradient = np.sum(loss_gradient, axis=(0, 1))
+        self.w_out.gradient = xp.einsum('btd,btv->dv', self.last_x, loss_gradient)
+        self.b_out.gradient = xp.sum(loss_gradient, axis=(0, 1))
 
         loss_gradient = loss_gradient @ self.w_out.value.T
 
