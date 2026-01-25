@@ -1,8 +1,9 @@
 import math
 import pickle
 import sys
-import numpy as np
 import json
+
+from mnemos import xp
 from datetime import datetime
 import time
 
@@ -77,7 +78,7 @@ class Trainer:
         """Calculate estimated time remaining."""
         if not self.batch_times:
             return "N/A"
-        avg_time = np.mean(self.batch_times[-10:])
+        avg_time = xp.mean(self.batch_times[-10:])
         total_seconds = int(avg_time * batches_remaining)
         return f"{total_seconds//3600}h {(total_seconds%3600)//60}m {total_seconds%60}s"
 
@@ -101,7 +102,7 @@ class Trainer:
 
         for epoch in range(1, NB_EPOCHS + 1):
             print(f"\n🌈 Epoch {epoch}/{NB_EPOCHS}")
-            np.random.shuffle(train_batches)
+            xp.random.shuffle(train_batches)
             
             epoch_train_loss = []
             epoch_val_loss = []
@@ -118,7 +119,7 @@ class Trainer:
                 
                 # Validation (10% of epoch)
                 if i % max(1, total_batches//10) == 0 or i == total_batches:
-                    val_batch = val_batches[np.random.randint(len(val_batches))]
+                    val_batch = val_batches[xp.random.randint(len(val_batches))]
                     val_loss = self._run_batch(val_batch, is_training=False)
                     epoch_val_loss.append(val_loss)
                     
@@ -132,8 +133,8 @@ class Trainer:
                 log_freq = max(1, total_batches//50)
                 if i % log_freq == 0 or i == total_batches:
                     # Calculate metrics
-                    avg_train = np.mean(epoch_train_loss[-log_freq*2:] or [0])
-                    avg_val = np.mean(epoch_val_loss) if epoch_val_loss else 0
+                    avg_train = xp.mean(epoch_train_loss[-log_freq*2:] or [0])
+                    avg_val = xp.mean(epoch_val_loss) if epoch_val_loss else 0
                     batches_remaining = (NB_EPOCHS - epoch)*total_batches + (total_batches - i)
                     eta = self._get_time_estimate(batches_remaining)
                     
@@ -145,7 +146,7 @@ class Trainer:
                         'train_loss': avg_train,
                         'val_loss': avg_val,
                         'lr': self.lr,
-                        'time_per_batch': np.mean(self.batch_times[-10:]),
+                        'time_per_batch': xp.mean(self.batch_times[-10:]),
                         'eta': eta
                     }
                     batch_logs.append(log_entry)
@@ -161,8 +162,8 @@ class Trainer:
             
             # Epoch summary
             epoch_time = time.time() - self.start_time
-            avg_train_loss = np.mean(epoch_train_loss)
-            avg_val_loss = np.mean(epoch_val_loss) if epoch_val_loss else 0
+            avg_train_loss = xp.mean(epoch_train_loss)
+            avg_val_loss = xp.mean(epoch_val_loss) if epoch_val_loss else 0
             
             print(f"\n\n📈 Epoch {epoch} Summary:")
             print(f"⏱️  Duration: {epoch_time//60:.0f}m {epoch_time%60:.0f}s")
@@ -175,7 +176,7 @@ class Trainer:
                     epoch=log['epoch'],
                     step=log['batch'],
                     loss=log['train_loss'],
-                    perplexity=np.exp(log['train_loss']) if log['train_loss'] else 0
+                    perplexity=xp.exp(log['train_loss']) if log['train_loss'] else 0
                 )
 
         # Final save and summary

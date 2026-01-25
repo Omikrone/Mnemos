@@ -22,15 +22,15 @@ class PreProcesser:
 
         cleaned_lines = []
 
-        # Obtenir la taille totale du fichier (en octets)
+        # Get total file size for progress tracking
         total_size = os.path.getsize(data_file_path)
         processed_size = 0
-        last_printed_percent = -1  # Pour éviter les doublons
+        last_printed_percent = -1
 
         with open(data_file_path, "r", encoding="utf-8") as file:
             for line in file.readlines():
 
-                # Nettoyage et normalisation de la ligne
+                # Clean and normalize the line
                 cleaned_line = self._clean_text(line)
                 cleaned_line = self._normalize_whitespace(cleaned_line)
 
@@ -38,10 +38,9 @@ class PreProcesser:
                     continue
                 cleaned_lines.append(cleaned_line)
 
-                # Mise à jour de la taille traitée
+                # Update processed size
                 processed_size += len(line.encode("utf-8"))
 
-                # Affichage du pourcentage (uniquement si changement)
                 percent = int((processed_size / total_size) * 100)
                 if percent != last_printed_percent:
                     print(f"\rPreprocessing: {percent}%", end="")

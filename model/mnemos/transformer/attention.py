@@ -1,5 +1,4 @@
-import numpy as np
-
+from mnemos import xp
 from mnemos.transformer.gradient import Param
 from mnemos.transformer.save_model import AttentionParams, MultiHeadAttentionParams
 from mnemos.config.params import EMBEDDING_DIM, NB_ATTENTION_HEADS, EPS
@@ -8,25 +7,25 @@ from mnemos.config.params import EMBEDDING_DIM, NB_ATTENTION_HEADS, EPS
 class SelfAttention:
     """ SelfAttention class for implementing the attention mechanism in the Transformer model. """
 
-    input_embeddings : np.ndarray
+    input_embeddings : xp.ndarray
     query_matrix : Param
     key_matrix : Param
     value_matrix : Param
-    output : np.ndarray
-    attention_weights : np.ndarray
-    value : np.ndarray
-    key : np.ndarray
-    query : np.ndarray
+    output : xp.ndarray
+    attention_weights : xp.ndarray
+    value : xp.ndarray
+    key : xp.ndarray
+    query : xp.ndarray
 
 
     def __init__(self):
         """ Initialize the attention matrices with random values. """
 
         # Random initialization of attention matrices
-        std = np.sqrt(2.0 / (EMBEDDING_DIM + EMBEDDING_DIM))
-        self.query_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * std)
-        self.key_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * std)
-        self.value_matrix = Param(np.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * std)
+        std = xp.sqrt(2.0 / (EMBEDDING_DIM + EMBEDDING_DIM))
+        self.query_matrix = Param(xp.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * std)
+        self.key_matrix = Param(xp.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * std)
+        self.value_matrix = Param(xp.random.randn(EMBEDDING_DIM, EMBEDDING_DIM) * std)
 
 
     @classmethod
@@ -40,7 +39,7 @@ class SelfAttention:
         return instance
 
 
-    def add_attention(self, input_embeddings: np.ndarray) -> np.ndarray:
+    def add_attention(self, input_embeddings: xp.ndarray) -> xp.ndarray:
         self.input_embeddings = input_embeddings
         
         # Projections
@@ -50,28 +49,28 @@ class SelfAttention:
 
         # Attention scores
         d_k = input_embeddings.shape[-1]
-        scale = np.sqrt(d_k)  # Retirer EPS
+        scale = xp.sqrt(d_k)  # Retirer EPS
         scores = self.query @ self.key.transpose(0, 2, 1) / scale
 
         # Apply softmax to the scores
         seq_len = input_embeddings.shape[1]
-        mask = np.tril(np.ones((seq_len, seq_len), dtype=np.bool_))[None, :, :]
-        scores = np.where(mask, scores, -np.inf)
+        mask = xp.tril(xp.ones((seq_len, seq_len), dtype=xp.bool_))[None, :, :]
+        scores = xp.where(mask, scores, -xp.inf)
 
         # Softmax with numerical stability
-        max_scores = np.max(scores, axis=-1, keepdims=True)
+        max_scores = xp.max(scores, axis=-1, keepdims=True)
         scores = scores - max_scores
-        exp_scores = np.exp(scores)
-        sum_exp = np.sum(exp_scores, axis=-1, keepdims=True) + 1e-9
+        exp_scores = xp.exp(scores)
+        sum_exp = xp.sum(exp_scores, axis=-1, keepdims=True) + 1e-9
         self.attention_weights = exp_scores / sum_exp
 
         self.output = self.attention_weights @ self.value
         return self.output
     
 
-    def backward(self, d_output) -> np.ndarray:
+    def backward(self, d_output) -> xp.ndarray:
         B, T, D = d_output.shape
-        sqrt_d = np.sqrt(D)
+        sqrt_d = xp.sqrt(D)
 
         # Gradient with respect to value
         d_value = self.attention_weights.transpose(0, 2, 1) @ d_output  # (B, T, D)
@@ -137,7 +136,7 @@ class SelfAttention:
 class MultiHeadAttention:
 
     attention_heads : list[SelfAttention]
-    concat : np.ndarray
+    concat : xp.ndarray
     w_out : Param
     b_out : Param
 
@@ -145,8 +144,8 @@ class MultiHeadAttention:
         
         self.attention_heads = [SelfAttention() for _ in range(NB_ATTENTION_HEADS)]
 
-        self.w_out = Param(np.random.randn(NB_ATTENTION_HEADS * EMBEDDING_DIM, EMBEDDING_DIM) * 0.01)
-        self.b_out = Param(np.zeros(EMBEDDING_DIM))
+        self.w_out = Param(xp.random.randn(NB_ATTENTION_HEADS * EMBEDDING_DIM, EMBEDDING_DIM) * 0.01)
+        self.b_out = Param(xp.zeros(EMBEDDING_DIM))
 
     
     @classmethod
@@ -162,12 +161,12 @@ class MultiHeadAttention:
 
     def forward(self, inputs):
         heads_out = [head.add_attention(inputs) for head in self.attention_heads]
-        self.concat = np.concatenate(heads_out, axis=-1)
+        self.concat = xp.concatenate(heads_out, axis=-1)
         output = self.concat @ self.w_out.value + self.b_out.value
         return output
     
 
-    def backward(self, grad_out : np.ndarray):
+    def backward(self, grad_out : xp.ndarray):
 
         B, T, D_concat = self.concat.shape
         _, _, D_out = grad_out.shape
@@ -175,7 +174,7 @@ class MultiHeadAttention:
         self.b_out.gradient += grad_out.sum(axis=(0,1))
 
         grad_concat = grad_out @ self.w_out.value.T
-        split_grads = np.split(grad_concat, NB_ATTENTION_HEADS, axis=-1)
+        split_grads = xp.split(grad_concat, NB_ATTENTION_HEADS, axis=-1)
         grad_x_heads = [h.backward(g) for h, g in zip(self.attention_heads, split_grads)]
         grad_x = sum(grad_x_heads)
         return grad_x

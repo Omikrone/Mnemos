@@ -1,5 +1,4 @@
-import numpy as np
-
+from mnemos import xp
 from mnemos.training.tokenizer.bpe import BPETokenizer
 from mnemos.config.paths import *
 from mnemos.config.params import CHUNK_SIZE, BATCH_SIZE
@@ -35,7 +34,7 @@ class BatchBuilder:
         return chunks
 
 
-    def create_batches(self, chunks : list) -> list[tuple[np.ndarray, np.ndarray]]:
+    def create_batches(self, chunks : list) -> list[tuple[xp.ndarray, xp.ndarray]]:
         """ Create batches of BATCH_SIZE from the chunks. """
 
         training_batches, validation_batches = list(), list()
@@ -46,16 +45,16 @@ class BatchBuilder:
             inputs = [couple[0] for couple in chunks[i*BATCH_SIZE : (i+1)*BATCH_SIZE]]
             targets = [couple[1] for couple in chunks[i*BATCH_SIZE : (i+1)*BATCH_SIZE]]
 
-            inputs_batch = np.array(inputs)
-            targets_batch = np.array(targets)
+            inputs_batch = xp.array(inputs)
+            targets_batch = xp.array(targets)
             training_batches.append((inputs_batch, targets_batch))
 
         for i in range(nb_validation_batches):
             inputs = [couple[0] for couple in chunks[nb_training_batches*BATCH_SIZE + i*BATCH_SIZE : nb_training_batches*BATCH_SIZE + (i+1)*BATCH_SIZE]]
             targets = [couple[1] for couple in chunks[nb_training_batches*BATCH_SIZE + i*BATCH_SIZE : nb_training_batches*BATCH_SIZE + (i+1)*BATCH_SIZE]]
 
-            inputs_batch = np.array(inputs)
-            targets_batch = np.array(targets)
+            inputs_batch = xp.array(inputs)
+            targets_batch = xp.array(targets)
             validation_batches.append((inputs_batch, targets_batch))
 
         return training_batches, validation_batches

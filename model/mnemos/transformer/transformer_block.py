@@ -1,5 +1,4 @@
-import numpy as np
-
+from mnemos import xp
 from mnemos.transformer.dropout import Dropout
 from mnemos.transformer.layer_norm import LayerNorm
 from mnemos.transformer.mlp import MLP
@@ -40,7 +39,7 @@ class TransformerBlock:
         return instance
 
 
-    def forward(self, inputs : np.ndarray, train: bool = True) -> np.ndarray:
+    def forward(self, inputs : xp.ndarray, train: bool = True) -> xp.ndarray:
         """ Forward pass through the Transformer block. """
 
         # Layer normalization and residual connection for the self-attention sub-layer
@@ -59,28 +58,23 @@ class TransformerBlock:
         return x2
 
 
-    def backward(self, grad_x2: np.ndarray) -> np.ndarray:
+    def backward(self, grad_x2: xp.ndarray) -> xp.ndarray:
         """ Backward pass through the Transformer block. """
 
-        # === 1. Dropout sur x2 ===
         grad_x2 = self.dropout.backward(grad_x2)
 
-        # === 2. MLP ===
-        grad_mlp_out = grad_x2                         # x2 = x + mlp_out
+        grad_mlp_out = grad_x2
         grad_mlp = self.mlp.backward(grad_mlp_out)
         grad_ln2_input = self.ln2.backward(grad_mlp)
-        grad_x = grad_ln2_input + grad_mlp_out         # skip connection
+        grad_x = grad_ln2_input + grad_mlp_out
 
-        # === 3. Dropout sur x ===
         grad_x = self.dropout.backward(grad_x)
 
-        # === 4. Self-attention ===
-        grad_attn_out = grad_x                         # x = inputs + attn_out
-        grad_attn_out = self.dropout.backward(grad_attn_out)  # dropout sur attn_out
+        grad_attn_out = grad_x
+        grad_attn_out = self.dropout.backward(grad_attn_out)
         grad_attn = self.self_attention.backward(grad_attn_out)
         grad_ln1_input = self.ln1.backward(grad_attn)
 
-        # === 5. Skip connection initiale ===
         grad_input = grad_ln1_input + grad_attn_out
 
         return grad_input

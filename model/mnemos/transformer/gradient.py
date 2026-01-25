@@ -1,17 +1,17 @@
-import numpy as np
+from mnemos import xp
 
 
 class Param:
     """ Class representing a parameter with its value and gradient. """
 
-    value : np.ndarray
-    gradient : np.ndarray
+    value : xp.ndarray
+    gradient : xp.ndarray
 
     def __init__(self, value):
         """ Initialize the parameter with a value and zero gradient. """
 
         self.value = value
-        self.gradient = np.zeros_like(value)
+        self.gradient = xp.zeros_like(value)
 
     def step(self, lr : float):
         """ Update the weight with gradient descent """

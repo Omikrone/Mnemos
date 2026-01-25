@@ -1,5 +1,4 @@
-import numpy as np
-
+from mnemos import xp
 from mnemos.transformer.gradient import Param
 from mnemos.transformer.save_model import LayerNormParams
 from mnemos.config.params import EPS
@@ -11,19 +10,19 @@ class LayerNorm:
     gamma : Param
     beta : Param
     eps : float
-    x : np.ndarray
-    mean : np.ndarray
-    var : np.ndarray
-    std : np.ndarray
+    x : xp.ndarray
+    mean : xp.ndarray
+    var : xp.ndarray
+    std : xp.ndarray
     dim : int
-    x_norm : np.ndarray
+    x_norm : xp.ndarray
 
 
     def __init__(self, dim, eps=EPS):
 
         # Initialisation of the parameters gamma and beta
-        self.gamma = Param(np.ones((1, 1, dim))) # Weights for normalization
-        self.beta = Param(np.zeros((1, 1, dim))) # Biases for normalization
+        self.gamma = Param(xp.ones((1, 1, dim))) # Weights for normalization
+        self.beta = Param(xp.zeros((1, 1, dim))) # Biases for normalization
 
         # Constant to avoid division by zero
         self.eps = eps
@@ -39,15 +38,15 @@ class LayerNorm:
         return instance
 
 
-    def forward(self, x : np.ndarray) -> np.ndarray:
+    def forward(self, x : xp.ndarray) -> xp.ndarray:
         """ Normalize the inputs x to avoid exploding or vanishing gradients. """
 
         self.x = x
 
         # Compute the mean, variance, and standard deviation for normalization
-        self.mean = np.mean(x, axis=-1, keepdims=True)
-        self.var = np.var(x, axis=-1, keepdims=True)
-        self.std = np.maximum(np.sqrt(self.var + self.eps), 1e-6)
+        self.mean = xp.mean(x, axis=-1, keepdims=True)
+        self.var = xp.var(x, axis=-1, keepdims=True)
+        self.std = xp.maximum(xp.sqrt(self.var + self.eps), 1e-6)
 
         # Normalize the inputs
         self.x_norm = (x - self.mean) / self.std
@@ -64,13 +63,13 @@ class LayerNorm:
         _, _, D = self.x.shape
 
         # Compute gradients for parameters gamma and beta
-        self.gamma.gradient = np.sum(dout * self.x_norm, axis=(0, 1), keepdims=True)
-        self.beta.gradient = np.sum(dout, axis=(0, 1), keepdims=True)
+        self.gamma.gradient = xp.sum(dout * self.x_norm, axis=(0, 1), keepdims=True)
+        self.beta.gradient = xp.sum(dout, axis=(0, 1), keepdims=True)
 
         # Compute gradient of normalization, variance, and mean
         dx_norm = dout * self.gamma.value
-        dvar = np.sum(dx_norm * (self.x - self.mean) * -0.5 * self.std**-3, axis=-1, keepdims=True)
-        dmean = np.sum(-dx_norm / self.std, axis=-1, keepdims=True) + dvar * np.mean(-2.0 * (self.x - self.mean), axis=-1, keepdims=True)
+        dvar = xp.sum(dx_norm * (self.x - self.mean) * -0.5 * self.std**-3, axis=-1, keepdims=True)
+        dmean = xp.sum(-dx_norm / self.std, axis=-1, keepdims=True) + dvar * xp.mean(-2.0 * (self.x - self.mean), axis=-1, keepdims=True)
         dx = dx_norm / self.std + dvar * 2.0 * (self.x - self.mean) / D + dmean / D
 
         # Compute gradient of inputs
