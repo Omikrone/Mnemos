@@ -41,21 +41,15 @@ class TokenEmbedding:
         """
         d_output: gradient de shape (batch_size, seq_len, embedding_dim)
         """
-        # Initialisation du gradient s'il n'existe pas
         if self.matrix.gradient is None:
             self.matrix.gradient = xp.zeros_like(self.matrix.value)
 
-        # Accumulation vectorisée des gradients pour chaque token
-        # self.input_batches shape = (batch_size, seq_len)
-        # d_output shape = (batch_size, seq_len, embedding_dim)
         xp.add.at(
-            self.matrix.gradient,                   # accumulation dans la matrice
-            self.input_batches,                     # indices (batch_size, seq_len)
-            d_output                                # gradients correspondants
+            self.matrix.gradient,
+            self.input_batches,
+            d_output
         )
 
-        # Pour les IDs, on ne peut pas propager un vrai gradient en amont,
-        # on renvoie un tensor de zéros de même shape que d_output.
         return xp.zeros_like(d_output)
 
 
@@ -104,20 +98,13 @@ class PositionEmbedding:
         d_output: gradient remontant depuis la suite du réseau,
                 de shape (batch_size, seq_len, embedding_dim)
         """
-        # Initialisation du gradient si besoin
         if self.matrix.gradient is None:
             self.matrix.gradient = xp.zeros_like(self.matrix.value)
 
-        # Somme des gradients sur le batch pour chaque position
-        # grad_sum[i] = somme_{batch, dim} d_output[batch, i, :]
-        grad_sum = xp.sum(d_output, axis=0)  # shape = (seq_len, embedding_dim)
+        grad_sum = xp.sum(d_output, axis=0)
 
-        # On ajoute ce gradient aux lignes correspondantes de la matrice de pos.
-        # Attention à n'accumuler QUE sur la longueur seq_len actuelle.
         self.matrix.gradient[:self.seq_len] += grad_sum
 
-        # On renvoie le gradient en amont pour les embeddings de tokens
-        # (ici, c'est exactement d_output, pas besoin de le modifier)
         return d_output
     
 

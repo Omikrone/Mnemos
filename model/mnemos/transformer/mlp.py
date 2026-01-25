@@ -66,20 +66,15 @@ class MLP:
 
         B, T, _ = loss_gradient.shape
 
-        # === Gradient layer 2 (ReLU -> w_down) ===
         self.w_down.gradient += self.h_relu.reshape(B*T, -1).T @ loss_gradient.reshape(B*T, -1)
         self.b_down.gradient += xp.sum(loss_gradient, axis=(0, 1))
 
-        # === Gradient w.r.t. h_relu ===
         dh_relu = loss_gradient @ self.w_down.value.T
 
-        # === Pass through dropout mask ===
         dh_relu = self.dropout.backward(dh_relu)
 
-        # === Gradient through ReLU ===
         dh_relu = dh_relu * (self.h > 0)
 
-        # === Gradient layer 1 (inputs -> w_up) ===
         self.w_up.gradient += self.inputs.reshape(B*T, -1).T @ dh_relu.reshape(B*T, -1)
         self.b_up.gradient += xp.sum(dh_relu, axis=(0, 1))
 

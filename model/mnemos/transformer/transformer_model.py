@@ -32,7 +32,6 @@ class TransformerModel:
 
         model_params = ModelParams.from_state_dict(params)
 
-        # Load parameters into an instance of ModelParams from dict
         instance = cls(vocab_size=model_params.embedding_matrix.shape[0])
         instance.embedding = TokenEmbedding.from_params(model_params.embedding_matrix)
         instance.position = PositionEmbedding.from_params(model_params.position_matrix)
@@ -53,7 +52,6 @@ class TransformerModel:
         x = token_embeds + pos_embeds
 
         for block in self.blocks:
-            # Forward pass through each Transformer block
             x = block.forward(x, train=train)
         self.last_x = x
         
