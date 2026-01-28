@@ -1,7 +1,8 @@
 import sys
 import pickle
+import numpy as np
+import cupy
 
-from mnemos import xp
 from pathlib import Path
 
 from mnemos.training.tokenizer.parallel_encoding import tokenize_text
@@ -30,7 +31,7 @@ class Inference:
         """ Generate text based on the input prompt. """
         
         self.tokenizer = BPETokenizer(prompt)
-        tokens = xp.array([tokenize_text(prompt)]) # (1, seq_len)
+        tokens = np.array([tokenize_text(prompt)]) # (1, seq_len)
         B, T, D = tokens.shape
         tokens = tokens.reshape(B*T, D)
 
@@ -40,18 +41,20 @@ class Inference:
 
             context = tokens[:, -MAX_SEQUENCE_LENGTH:]  if tokens.shape[1] > MAX_SEQUENCE_LENGTH else tokens
             generated_token_id = self.predict_next_token(context)  # attend (batch, seq_len)
-            generated_token_id = xp.array([[generated_token_id]])
+            generated_token_id = np.array([[generated_token_id]])
             
-            tokens = xp.concatenate((tokens, generated_token_id), axis=1)
+            tokens = np.concatenate((tokens, generated_token_id), axis=1)
         
         char = self.tokenizer.decode(tokens[0])
         return char
 
 
-    def predict_next_token(self, input_ids: xp.ndarray) -> int:
+    def predict_next_token(self, input_ids: np.ndarray) -> int:
         """ Predict the next token given the input IDs. """
 
         logits = self.model.forward(input_ids, train=False)
+        if logits.__class__ != np.ndarray:
+            logits = cupy.asnumpy(logits)
         last_logits = logits[0, -1]
         prediction = self.sample_top_k(last_logits, k=10)
         return prediction
@@ -60,10 +63,10 @@ class Inference:
     def sample_top_k(self, logits, k=10) -> int:
         """ Sample from the top k logits using softmax. """
 
-        top_k_indices = xp.argpartition(logits, -k)[-k:]
+        top_k_indices = np.argpartition(logits, -k)[-k:]
         top_k_logits = logits[top_k_indices]
-        probs = xp.exp(top_k_logits) / xp.sum(xp.exp(top_k_logits))
-        return xp.random.choice(top_k_indices, p=probs)
+        probs = np.exp(top_k_logits) / np.sum(np.exp(top_k_logits))
+        return np.random.choice(top_k_indices, p=probs)
 
 
     def load_model(self, model_path: Path, vocab_path: Path) -> TransformerModel:
