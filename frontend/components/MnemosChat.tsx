@@ -48,9 +48,13 @@ export default function MnemosChat() {
           <CardHeader className="border-b border-gray-100 bg-white/50 pb-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-indigo-600 rounded-lg text-white shadow-md">
-                    <Bot size={24} />
-                </div>
+            <div className="w-10 flex items-center justify-center">
+                <img 
+                src="/mnemos.png" 
+                alt="Mnemos Logo" 
+                className="w-full h-auto object-contain rounded-lg"
+                />
+            </div>
                 <div>
                     <CardTitle className="text-xl font-bold text-gray-900 tracking-tight">
                     Mnemos
