@@ -1,7 +1,7 @@
 import sys
 import pickle
+from mnemos import xp
 import numpy as np
-import cupy
 
 from pathlib import Path
 
@@ -53,8 +53,8 @@ class Inference:
         """ Predict the next token given the input IDs. """
 
         logits = self.model.forward(input_ids, train=False)
-        if logits.__class__ != np.ndarray:
-            logits = cupy.asnumpy(logits)
+        if xp != np:
+            logits = xp.asnumpy(logits)
         last_logits = logits[0, -1]
         prediction = self.sample_top_k(last_logits, k=10)
         return prediction
