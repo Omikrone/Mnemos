@@ -1,66 +1,87 @@
 "use client";
 
-
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import PromptInput from "@/components/PromptInput"
-import ResponseBox from "@/components/ResponseBox"
+import { Sparkles, Bot } from "lucide-react";
+import PromptInput from "@/components/PromptInput";
+import ResponseBox from "@/components/ResponseBox";
+import GithubButton from "@/components/GithubButton";
 import { fetchChatResponse } from "@/services/mnemosApi";
 
-
 export default function MnemosChat() {
-    const [prompt, setPrompt] = useState("");
-    const [response, setResponse] = useState("");
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  const [prompt, setPrompt] = useState("");
+  const [response, setResponse] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  const handleSend = async () => {
+    if (!prompt.trim()) return;
 
-    const handleSend = async () => {
-        if (!prompt.trim()) return;
+    setLoading(true);
+    setError(null);
+    setResponse("");
 
+    try {
+      const output = await fetchChatResponse({ prompt });
+      setResponse(output.text);
+    } catch (err: any) {
+      setError(err.message ?? "Erreur inconnue");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        setLoading(true);
-        setError(null);
-        setResponse("");
+  return (
+    <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-gray-100 to-slate-200 p-4 font-sans text-slate-800">
 
+      <GithubButton />
 
-        try {
-            const output = await fetchChatResponse({prompt});
-            setResponse(output.text);
-        } catch (err: any) {
-            setError(err.message ?? "Erreur inconnue");
-        } finally {
-            setLoading(false);
-        }
-    };
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="w-full max-w-2xl z-10"
+      >
+        <Card className="rounded-2xl shadow-xl border border-white/50 bg-white/80 backdrop-blur-sm overflow-hidden">
+          
+          <CardHeader className="border-b border-gray-100 bg-white/50 pb-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-indigo-600 rounded-lg text-white shadow-md">
+                    <Bot size={24} />
+                </div>
+                <div>
+                    <CardTitle className="text-xl font-bold text-gray-900 tracking-tight">
+                    Mnemos
+                    </CardTitle>
+                    <p className="text-xs text-gray-500 font-medium">Mini Transformer Model</p>
+                </div>
+              </div>
+              
+              <div className="px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold flex items-center gap-1">
+                <Sparkles size={12} />
+                v0.1
+              </div>
+            </div>
+          </CardHeader>
 
-
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-            <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="w-full max-w-2xl"
-            >
-                <Card className="rounded-2xl shadow-lg">
-                    <CardContent className="p-6 space-y-4">
-                        <h1 className="text-2xl font-semibold">Mnemos – Interface Web</h1>
-
-
-                        <PromptInput
-                            value={prompt}
-                            onChange={setPrompt}
-                            onSend={handleSend}
-                            loading={loading}
-                        />
-
-
-                        <ResponseBox response={response} error={error} />
-                    </CardContent>
-                </Card>
-            </motion.div>
+          <CardContent className="p-6 space-y-6">
+            <ResponseBox response={response} error={error} />
+            
+            <PromptInput
+              value={prompt}
+              onChange={setPrompt}
+              onSend={handleSend}
+              loading={loading}
+            />
+          </CardContent>
+        </Card>
+        
+        <div className="mt-4 text-center text-xs text-gray-400">
+          Généré par Mnemos-0.1 • Le modèle peut (et va) faire des erreurs.
         </div>
-    );
+      </motion.div>
+    </div>
+  );
 }
