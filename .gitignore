@@ -1,10 +1,1 @@
-train.txt
-test.txt
-*__pycache__/
-*.pyc
-*.pkl
-*.json
-save/
-data/
-csv/
-logs/
+.env

@@ -1,0 +1,6 @@
+[project]
+name = "mnemos"
+version = "0.4.0"
+
+[project.scripts]
+mnemos-cli = "mnemos.cli:main"

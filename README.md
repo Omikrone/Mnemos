@@ -1,104 +1,132 @@
 # Mnemos - Mini-LLM based on Transformers
 
+<img src="docs/logo.png" alt="Mnemos Logo" width="200"/>
+
 ## Introduction
 
 **Mnemos** (comes from the [Greek deity of memory](https://en.wikipedia.org/wiki/Mnemosyne)) is a mini-LLM based on Transformers, designed for training and testing purposes. It is built to be lightweight and efficient, making it suitable for educational and experimental use.
 This pedagogical project is built from scratch, so all the different components are available in this repository, and you don't need to install much additional dependencies.
 
-- **Current Version**: 0.4.0 (POC)
+- **Current Version of Mnemos Architecture**: 0.5.0 (POC)
+- **Current Version of Mnemos Model**: 0.1.0
 
 ## Features
 
 Mnemos includes the following user features:
 - **Training on custom datasets**: You can load your own datasets and process them for training. Mnemos will automatically handle the tokenization and batching of the data, and adjust the model parameters accordingly.
+- **Compatibility with CPU and GPU**: Mnemos is designed to run on both CPU and GPU (only CUDA-enabled GPUs), allowing you to choose the best option based on your hardware capabilities.
 - **Testing with custom datasets**: You can test the model with your own datasets, allowing you to evaluate its performance on a separate validation set.
 - **Generation of text**: Once trained, Mnemos can generate text based on the learned patterns from the training data. You can make your own prompts and see how the model responds.
+- **Simple command-line interface**: Mnemos provides a straightforward command-line interface to interact with the model, making it easy to use for both training and inference.
+- **Web interface**: A simple web interface is also available for easier interaction with the model or if you want to deploy it in a more user-friendly environment.
+- **Mnemos API**: An API is provided to interact with the model, enabling integration with other applications or services.
 
 
 ## Installation
 
-To install Mnemos, clone the repository and install the required dependencies:
-
+At first, clone the repository:
 ```bash
-git clone https://github.com/Omikrone/Mnemos.git mnemos
-cd mnemos
-pip install -r requirements.txt
+git clone https://github.com/Omikrone/Mnemos.git
+cd Mnemos
 ```
 
-Then, you can run the main file to choose between training, testing, or generating text:
+### Docker
 
+If you only want to test Mnemos without setting up a development environment, you can use the provided Docker image. This image includes all the necessary dependencies and allows you to run Mnemos in a containerized environment.
+
+Before building the Docker image, you have to either train the model (see Training Instructions below) or download a pre-trained model (from the releases page). and place `model.pkl` and `vocab.json` files into the [`save` directory](/backend/model/mnemos/save/) (create it if it doesn't exist).
+
+Then, you can build and run the Docker containers using Docker Compose:
 ```bash
-python main.py
+docker compose up --build
 ```
 
+### Custom Installation
 
-## Usage
+On the other hand, if you want to train your own model or play with an existing one, you can set up a development environment by installing the required dependencies.
+
+To install `mnemos-cli` and `mnemos` package, you can use the following command:
+```bash
+pip3 install -e backend/model
+```
+
+**Note**: 
+- It is recommended to use a virtual environment to avoid conflicts with other Python packages.
+- It is also recommended to install the mnemos package in editable mode (`-e` flag) to allow for easy development and testing.
+
+### Backend Installation
+
+To set up the backend server, navigate to the `backend/` directory and install the required dependencies:
+```bash
+cd backend/
+pip3 install -r requirements.txt
+```
+
+### Frontend Installation
+
+To set up the frontend web interface, navigate to the `frontend/` directory and install the required dependencies using npm or yarn:
+```bash
+cd frontend/
+npm install
+```
+
+## Mnemos CLI
 
 Mnemos is designed to be user-friendly and straightforward. It provides a simple command-line interface to interact with the model. You can choose to train, test, or generate text by running the main script.
+
+After installing the `mnemos-cli` package, you can run the following command to start the CLI:
+```bash
+mnemos-cli
+```
 
 ### Training Instructions
 
 To train the model, follow these steps:
-1. Prepare your dataset in a text file format and rename it to `train.txt`. The size of the training dataset should be between 1 MB and 25 MB for effective training.
-2. Place the `train.txt` file in the `data/training/` directory at the root of the project (create this directory if it doesn't exist).
-3. Choose the training option in the main menu.
+1. Prepare your dataset in a text file format and rename it to `train.txt`. The size of the training dataset should be between 20 MB and 100 MB for effective training (depending on your hardware capabilities).
+2. Place the `train.txt` file in the `data/training/` directory in the [model directory](/backend/model/mnemos/) of the project (create this directory if it doesn't exist).
+3. You can optionally adjust the hyperparameters in the [`config.py` file](/backend/model/mnemos/config/params.py) to suit your training needs. If you are unsure, see the recommended parameters in [MODEL.md](MODEL.md).
+4. Choose the training option in the main menu.
 
 ### Testing Instructions
 
 If you want to test the model, follow these steps:
 1. Prepare your dataset in a text file format and rename it to `test.txt`.
-2. Place the `test.txt` file in the `data/testing/` directory at the root of the project (create this directory if it doesn't exist).
+2. Place the `test.txt` file in the `data/testing/` directory in the [model directory](/backend/model/mnemos/) of the project (create this directory if it doesn't exist).
 3. Choose the testing option in the main menu.
 
 ### Inference Instructions
 
 Once the model is trained, you can use it for inference (text generation) by choosing the inference option in the main menu and providing a prompt.
 
+**Note**: if you trained your model with CuPy (GPU), you have to first migrate it to NumPy (CPU) before using it for inference on CPU. You can do this by running the following command:
+```bash
+python3 backend/model/mnemos/utils/migrate_model.py --input-path backend/model/mnemos/save/model.pkl --output-path backend/model/mnemos/save/model_numpy.pkl
+```
+Then, rename the migrated model file to `model.pkl` to use it for inference.
 
-## Architecture & Components
+## Web Interface
 
-Mnemos is based on the Transformer architecture and consists of several key components:
-- **Tokenizer**: A custom BPE ([Byte Pair Encoding](https://en.wikipedia.org/wiki/Byte_pair_encoding)) tokenizer that can handle text encoding and decoding in subword units.
-- **2-Heads Self-Attention**: A simplified multi-head attention mechanism that allows the model to focus on different parts of the input text (with causal masking).
-- **Feed Forward MLP**: A multi-layer perceptron that processes the output from the attention mechanism.
-- **Layer Normalization**: A layer normalization component that stabilizes the training process and avoids vanishing or exploding gradients.
-- **Transformer Block**: A combination of the attention head, feed forward MLP, and layer normalization, forming the core of the Transformer architecture.
-- **Loss Function**: A loss function based on the cross-entropy loss, which is commonly used in language modeling tasks.
-- **Gradient Descent**: An optimizer that updates the model parameters based on the computed gradients for the training.
+To run the web interface, follow these steps:
 
+1. Ensure that you have a trained model and that you have installed the `mnemos` package as described in the Installation section.
 
-## Tests and Results
-
-The first objective of this project is to be a pedagogical tool, so it is not meant to be a production-ready model. I tested Mnemos on a small dataset of 20 MB, and achieved following results:
-- **Average Training and Test Loss**: 1.85
-
-- **Example of prompt and generated text from previous version**:
-```markdown
-Prompt : "tout le monde convient "
-Generated text : " avioncont de qulem'onast eronsore le a de ra"
+2. Start the backend server by navigating to the `backend/` directory and running:
+```bash
+uvicorn app.main:app --reload
 ```
 
-- **Example of prompt and generated text from current version**:
-```markdown
-Prompt: "tout le monde convient "
-Generated Text: " l'avient du ss'oscaissant court de l'acfesion donnation suir celaire d'unes deurs deurs mitéréen de la dévenome crecelle sertimenant qu'étrage le sitanduonon le crécele parles en la majours, la comment dom."
+3. Start the frontend development server by navigating to the `frontend/` directory and running:
+```bash
+npm run dev
 ```
 
-As you can see, the model is able to generate text that reproduce the structure of syllables and phrases, but it is not yet coherent or meaningful. This is expected for a small dataset and a simple model architecture.
+## Common Issues
 
-This shows that the model is able to generate text that resembles the structure of the input text, but it is still not coherent or meaningful. The model is still in its early stages of development and requires further training and improvements to achieve better results.
+If you encounter some issues while training a Mnemos model, it may be due to bad hyperparameters or bad training data. During training, make sure to monitor the training and validation loss to ensure that the model is learning effectively. For example, if the training loss is decreasing but the validation loss is increasing, it may indicate overfitting. To avoid that, you can try to reproduce the training parameters used for traing ``Mnemos v0.1.0`` (see [MODEL.md](MODEL.md) for more details).
 
+## Roadmap
 
-## Limitations and Future Work
-
-Mnemos is a minimal implementation of a Transformer-based language model, and it is not yet capable of generating coherent or meaningful text. The main limitations are:
-- **Small Dataset**: The model was trained on a small dataset, which limits its ability to learn complex patterns and relationships in the data.
-- **Simplified Architecture**: The model uses a simplified architecture with only one attention head and a single feed forward MLP, which limits its capacity to learn complex representations.
-- **General performance**: The model is not yet optimized for performance, and it may not scale well to larger datasets or more complex tasks.
-
-The following improvements are planned for the next version:
-
-- [X] **Add more attention heads**: Using multiple attention heads will allow the model to focus on different parts of the input text and learn more complex representations.
-- [X] **Increase the model size**: Adding more layers and parameters will increase the model's capacity to learn complex patterns and relationships in the data.
-- [ ] **Optimize the training process**: Implementing more advanced optimization techniques, such as learning rate scheduling and gradient clipping, will improve the training stability and convergence.
-- [ ] **Improve the user interface**: Enhancing the command-line interface to provide more options and better feedback to the user.
+The following features are planned for future versions of Mnemos:
+- Support for Parquet and CSV datasets.
+- Improve the Mnemos Architecture by adding an optimizer.
+- Better user interface and improve installation process.
