@@ -98,6 +98,12 @@ If you want to test the model, follow these steps:
 
 Once the model is trained, you can use it for inference (text generation) by choosing the inference option in the main menu and providing a prompt.
 
+**Note**: if you trained your model with CuPy (GPU), you have to first migrate it to NumPy (CPU) before using it for inference on CPU. You can do this by running the following command:
+```bash
+python3 backend/model/mnemos/utils/migrate_model.py --input-path backend/model/mnemos/save/model.pkl --output-path backend/model/mnemos/save/model_numpy.pkl
+```
+Then, rename the migrated model file to `model.pkl` to use it for inference.
+
 ## Web Interface
 
 To run the web interface, follow these steps:

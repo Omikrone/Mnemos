@@ -52,12 +52,14 @@ Generated Text: " l'avient du ss'oscaissant court de l'acfesion donnation suir c
 As you can see, the model is now able to generate text that reproduce the structure of syllables and phrases, but it is not yet coherent or meaningful. This is expected for a small dataset and a simple model architecture. However, the current version shows significant improvement compared to the previous test version.
 
 
-## Limitations and Future Work
+## Current Limitations
 
 Mnemos is a minimal implementation of a Transformer-based language model, and it is not yet capable of generating coherent or meaningful text. The main limitations are:
 - **Small Dataset**: The model was trained on a small dataset, which limits its ability to learn complex patterns and relationships in the data.
 - **Simplified Architecture**: The model uses a simplified architecture with only one attention head and a single feed forward MLP, which limits its capacity to learn complex representations.
 - **General performance**: The model is not yet optimized for performance, and it may not scale well to larger datasets or more complex tasks.
+
+## Roadmap
 
 The following improvements are planned for the next version:
 
